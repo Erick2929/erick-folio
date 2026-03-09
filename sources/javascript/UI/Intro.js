@@ -7,9 +7,11 @@ export default class Intro {
     this._btn = document.getElementById('intro-btn')
     this._lines = [
       '> initializing erick.siller v2.0.25...',
-      '> loading ai_systems.module............. OK',
-      '> loading backend.core.................. OK',
-      '> loading distributed_infra............. OK',
+      '> loading typescript.runtime............ OK',
+      '> loading python.ml_pipeline............ OK',
+      '> loading go.distributed_core........... OK',
+      '> loading llm.agent_framework........... OK',
+      '> loading react.three_renderer.......... OK',
       '> loading human.profile................. OK',
       '> spawning cyberpunk_world.............. OK',
       '> all systems nominal.',

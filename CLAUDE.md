@@ -73,3 +73,29 @@ Target: 60 FPS on integrated GPU (MacBook). Frame budget: <16ms.
 - Target: static hosting (Netlify / Vercel / GitHub Pages)
 - Build output: `dist/` — fully static, no server needed
 - Run `npm run build` then deploy `dist/`
+
+## Backlog
+
+### P0 — Critical
+- [x] Portfolio content — About, Projects, Contact panels via HUD nav buttons (`index.html`)
+- [x] Interactive HUD — Nav panels + portfolio content accessible from bottom HUD (`index.html`, `style.css`, `UI/HUD.js`)
+- [x] SEO + Open Graph — Title, description, og:image, og:title (`index.html`)
+
+### P1 — High Impact
+- [x] Intro personalizada — Real stack in boot sequence (`UI/Intro.js`)
+- [x] Neon signs with text — Canvas texture signs with real text (`City.js`)
+- [ ] Audio ambience — Synth ambient loop + engine hum + rain (`World/Audio.js`)
+- [x] HUD telemetry — Real-time speed, altitude, velocity from Ship (`UI/HUD.js`)
+
+### P2 — Visual Polish
+- [ ] Engine trail particles — Particle trail behind ship engines (`World/Ship.js`)
+- [x] Blinking windows — Random window flicker adds city life (`City.js`)
+- [x] Skybox / stars — Starfield Points with fog:false (`City.js`)
+- [ ] Rooftop variety — Helipads, blinking antenna lights (`City.js`)
+
+### P3 — Nice-to-have
+- [x] Fullscreen button — In top-right HUD corner (`index.html`, `UI/HUD.js`)
+- [ ] Mobile / touch controls — Touch joystick for mobile (`UI/TouchControls.js`)
+- [ ] Screenshot / share — canvas.toDataURL capture (`UI/`)
+- [ ] LOD buildings — Simplified far geometry for low-end GPUs (`City.js`)
+- [ ] Gamepad support — Gamepad API controller support (`Ship.js`)

@@ -3,26 +3,134 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Erick Siller</title>
+  <title>Erick Siller — Software Engineer</title>
+  <meta name="description" content="Erick Siller — Software Engineer specializing in AI systems, backend infrastructure, and distributed systems." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Erick Siller — Software Engineer" />
+  <meta property="og:description" content="Interactive 3D portfolio. Pilot a ship over a neon cyberpunk city." />
+  <meta property="og:image" content="/og-image.png" />
+  <meta property="og:url" content="https://ericksiller.dev" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Erick Siller — Software Engineer" />
+  <meta name="twitter:description" content="Interactive 3D portfolio. Pilot a ship over a neon cyberpunk city." />
+  <meta name="twitter:image" content="/og-image.png" />
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <canvas class="webgl"></canvas>
 
+  <!-- INTRO -->
   <div id="intro">
     <div id="intro-content">
       <div id="intro-terminal"></div>
-      <div id="intro-bar">
-        <div id="intro-bar-fill"></div>
-      </div>
+      <div id="intro-bar"><div id="intro-bar-fill"></div></div>
       <button id="intro-btn" style="display:none">[ ENTER SYSTEM ]</button>
     </div>
   </div>
 
+  <!-- HUD OVERLAY (full-screen, pointer-events: none by default) -->
   <div id="hud">
-    <div id="hud-name">ERICK SILLER</div>
-    <div id="hud-role">SOFTWARE ENGINEER · AI SYSTEMS · BUILDER</div>
-    <div id="hud-controls">WASD · MOVE &nbsp;|&nbsp; QE · ALTITUDE &nbsp;|&nbsp; SHIFT · BOOST</div>
+    <!-- Telemetry top-left -->
+    <div id="hud-telemetry">
+      <div class="telem-row"><span class="telem-label">SPD</span><span id="telem-speed">000</span></div>
+      <div class="telem-row"><span class="telem-label">ALT</span><span id="telem-alt">000</span></div>
+      <div class="telem-row"><span class="telem-label">VEC</span><span id="telem-vec">+0.0 / +0.0</span></div>
+    </div>
+
+    <!-- Center bottom identity + nav -->
+    <div id="hud-center">
+      <div id="hud-name">ERICK SILLER</div>
+      <div id="hud-role">SOFTWARE ENGINEER · AI SYSTEMS · BUILDER</div>
+      <div id="hud-controls">WASD · MOVE &nbsp;|&nbsp; QE · ALTITUDE &nbsp;|&nbsp; SHIFT · BOOST</div>
+      <div id="hud-nav">
+        <button class="hud-nav-btn" data-panel="about">[ ABOUT ]</button>
+        <button class="hud-nav-btn" data-panel="projects">[ PROJECTS ]</button>
+        <button class="hud-nav-btn" data-panel="contact">[ CONTACT ]</button>
+      </div>
+    </div>
+
+    <!-- Fullscreen top-right -->
+    <button id="btn-fullscreen" title="Toggle fullscreen">⛶</button>
+  </div>
+
+  <!-- PORTFOLIO PANELS -->
+  <div class="portfolio-panel" id="panel-about">
+    <div class="panel-inner">
+      <button class="panel-close">[ CLOSE ]</button>
+      <h2>ERICK SILLER</h2>
+      <p class="panel-subtitle">Software Engineer · AI Systems · Builder</p>
+      <div class="panel-body">
+        <p>Building at the intersection of AI, backend infrastructure, and developer experience. Focused on LLM-powered products, distributed systems, and anything that ships fast and runs reliably.</p>
+        <div class="panel-skills">
+          <div class="skill-group"><span class="skill-label">LANGUAGES</span><span>TypeScript · Python · Go · Rust</span></div>
+          <div class="skill-group"><span class="skill-label">FRONTEND</span><span>React · Three.js · Next.js · WebGL</span></div>
+          <div class="skill-group"><span class="skill-label">BACKEND</span><span>Node.js · FastAPI · Go HTTP · gRPC</span></div>
+          <div class="skill-group"><span class="skill-label">AI / ML</span><span>LLM Integration · RAG · Vector DBs · Agents</span></div>
+          <div class="skill-group"><span class="skill-label">INFRA</span><span>Docker · K8s · AWS · Terraform · CI/CD</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="portfolio-panel" id="panel-projects">
+    <div class="panel-inner">
+      <button class="panel-close">[ CLOSE ]</button>
+      <h2>PROJECTS</h2>
+      <div class="panel-body">
+        <div class="project-item">
+          <div class="project-header">
+            <span class="project-name">ERICK.DEV</span>
+            <span class="project-tag">Three.js · WebGL · Vite</span>
+          </div>
+          <p>Interactive 3D portfolio — cyberpunk city flythrough. You're flying through it right now. Built with instanced rendering, post-processing bloom, and procedural city generation.</p>
+        </div>
+        <div class="project-item">
+          <div class="project-header">
+            <span class="project-name">AI Chat Platform</span>
+            <span class="project-tag">LLM · Streaming · RAG</span>
+          </div>
+          <p>Real-time AI assistant with streaming responses, retrieval-augmented generation pipeline, and multi-model support. Handles 1000+ concurrent sessions.</p>
+        </div>
+        <div class="project-item">
+          <div class="project-header">
+            <span class="project-name">Distributed API Gateway</span>
+            <span class="project-tag">Go · gRPC · Kubernetes</span>
+          </div>
+          <p>High-throughput API gateway with gRPC microservices. 99.9% uptime, sub-2ms p50 latency under load. Replaced legacy monolith.</p>
+        </div>
+        <div class="project-item">
+          <div class="project-header">
+            <span class="project-name">Observability Platform</span>
+            <span class="project-tag">Metrics · Tracing · Python</span>
+          </div>
+          <p>Full-stack observability system with custom metrics pipeline, distributed tracing, and automated alerting. Replaced legacy monitoring stack.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="portfolio-panel" id="panel-contact">
+    <div class="panel-inner">
+      <button class="panel-close">[ CLOSE ]</button>
+      <h2>CONTACT</h2>
+      <div class="panel-body">
+        <p>Available for senior/staff engineering roles, consulting, and interesting problems.</p>
+        <div class="contact-links">
+          <a href="mailto:erick@siller.dev" class="contact-item">
+            <span class="contact-label">EMAIL</span>
+            <span>erick@siller.dev</span>
+          </a>
+          <a href="https://github.com/ericksiller" target="_blank" rel="noopener" class="contact-item">
+            <span class="contact-label">GITHUB</span>
+            <span>github.com/ericksiller</span>
+          </a>
+          <a href="https://linkedin.com/in/ericksiller" target="_blank" rel="noopener" class="contact-item">
+            <span class="contact-label">LINKEDIN</span>
+            <span>linkedin.com/in/ericksiller</span>
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="./javascript/Experience.js"></script>

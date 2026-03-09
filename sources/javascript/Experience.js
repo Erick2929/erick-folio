@@ -7,6 +7,7 @@ import Renderer from './Renderer.js'
 import Ship from './World/Ship.js'
 import World from './World/World.js'
 import Intro from './UI/Intro.js'
+import HUD from './UI/HUD.js'
 
 export default class Experience {
   static instance
@@ -27,6 +28,7 @@ export default class Experience {
     this.renderer = new Renderer()
     this.ship = new Ship()
     this.world = new World()
+    this.hud = new HUD()
 
     // Pause ticker until intro done
     this.ticker.dispose()
