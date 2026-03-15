@@ -26,6 +26,10 @@ export default class City {
     this._coldWindowCount = 0
     this._initWindowPools()
 
+    this.buildings = []
+    this._projects = []
+    this._projectMarkers = []
+
     this._createGround()
     this._createBuildings()
     this._createLights()
@@ -39,6 +43,7 @@ export default class City {
 
     this._initInstanceColors()
     this._startFlicker()
+    this._loadProjects()
   }
 
   _initWindowPools() {
@@ -102,6 +107,8 @@ export default class City {
     const building = new THREE.Mesh(geo, mat)
     building.position.set(x, h / 2, z)
     this.scene.add(building)
+
+    this.buildings.push({ x, z, h, w, d, project: null })
 
     this._addWindows(x, h, z, w, d)
     if (Math.random() > 0.6) this._addNeonSign(x, h, z, w, d)
@@ -293,5 +300,53 @@ export default class City {
     for (let i = 0; i < 10; i++) {
       setTimeout(flicker, randInt(0, 2000))
     }
+  }
+
+  async _loadProjects() {
+    try {
+      const res = await fetch('/projects.json')
+      this._projects = await res.json()
+    } catch {
+      this._projects = []
+      return
+    }
+
+    // Shuffle buildings and assign one per project
+    const shuffled = [...this.buildings].sort(() => Math.random() - 0.5)
+    for (let i = 0; i < this._projects.length && i < shuffled.length; i++) {
+      shuffled[i].project = this._projects[i]
+      this._addProjectMarker(shuffled[i])
+    }
+  }
+
+  _addProjectMarker(building) {
+    // Pulsing cyan light on the rooftop
+    const light = new THREE.PointLight(0x00f0ff, 2, 30)
+    light.position.set(building.x, building.h + 2, building.z)
+    this.scene.add(light)
+
+    // Small glowing plane on top
+    const tex = this._makeTextTexture('[ PROJECT ]', 0x00f0ff)
+    const geo = new THREE.PlaneGeometry(building.w * 0.8, 1.2)
+    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide })
+    const sign = new THREE.Mesh(geo, mat)
+    sign.position.set(building.x, building.h + 1.5, building.z)
+    sign.rotation.x = -Math.PI / 2
+    this.scene.add(sign)
+
+    // Animate light pulse
+    const startTime = Date.now()
+    const pulse = () => {
+      const t = (Date.now() - startTime) * 0.002
+      light.intensity = 1.2 + Math.sin(t * 2) * 0.8
+      requestAnimationFrame(pulse)
+    }
+    pulse()
+
+    this._projectMarkers.push({ light, sign })
+  }
+
+  getProjectBuildings() {
+    return this.buildings.filter(b => b.project !== null)
   }
 }

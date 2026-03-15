@@ -5,6 +5,7 @@ export default class HUD {
     const exp = Experience.getInstance()
     this.ship = exp.ship
     this.ticker = exp.ticker
+    this._exp = exp
 
     this._speedEl = document.getElementById('telem-speed')
     this._altEl = document.getElementById('telem-alt')
@@ -12,6 +13,7 @@ export default class HUD {
 
     this._initPanels()
     this._initFullscreen()
+    this._initFreeFly()
 
     this.ticker.events.on('tick', () => this._updateTelemetry(), 10)
   }
@@ -48,6 +50,17 @@ export default class HUD {
       } else {
         document.exitFullscreen().catch(() => {})
       }
+    })
+  }
+
+  _initFreeFly() {
+    const btn = document.getElementById('btn-freefly')
+    if (!btn) return
+    btn.addEventListener('click', () => {
+      const world = this._exp.world
+      if (!world?.projectDetector) return
+      const enabled = world.projectDetector.toggle()
+      btn.textContent = enabled ? '[ FREE FLY ]' : '[ PROJECTS ON ]'
     })
   }
 

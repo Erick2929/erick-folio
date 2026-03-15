@@ -46,6 +46,7 @@
         <button class="hud-nav-btn" data-panel="about">[ ABOUT ]</button>
         <button class="hud-nav-btn" data-panel="projects">[ PROJECTS ]</button>
         <button class="hud-nav-btn" data-panel="contact">[ CONTACT ]</button>
+        <button id="btn-freefly" class="hud-nav-btn">[ FREE FLY ]</button>
       </div>
     </div>
 
@@ -130,6 +131,21 @@
           </a>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- PROJECT DIALOG -->
+  <div id="project-dialog" class="project-dialog hidden">
+    <div class="project-dialog-header">
+      <span class="project-dialog-tag">// PROJECT DETECTED</span>
+      <button id="project-close">✕</button>
+    </div>
+    <h2 id="project-name"></h2>
+    <p id="project-desc"></p>
+    <div id="project-stack"></div>
+    <div class="project-dialog-links">
+      <a id="project-link" href="#" target="_blank" rel="noreferrer">VISIT →</a>
+      <a id="project-github" href="#" target="_blank" rel="noreferrer">GITHUB →</a>
     </div>
   </div>
 
