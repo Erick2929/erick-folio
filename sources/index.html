@@ -7,12 +7,12 @@
   <meta name="description" content="Erick Siller — Software Engineer specializing in AI systems, backend infrastructure, and distributed systems." />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Erick Siller — Software Engineer" />
-  <meta property="og:description" content="Interactive 3D portfolio. Pilot a ship over a neon cyberpunk city." />
+  <meta property="og:description" content="Interactive 3D portfolio. Pilot a ship through a neon space exploration." />
   <meta property="og:image" content="/og-image.png" />
   <meta property="og:url" content="https://ericksiller.dev" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Erick Siller — Software Engineer" />
-  <meta name="twitter:description" content="Interactive 3D portfolio. Pilot a ship over a neon cyberpunk city." />
+  <meta name="twitter:description" content="Interactive 3D portfolio. Pilot a ship through a neon space exploration." />
   <meta name="twitter:image" content="/og-image.png" />
   <link rel="stylesheet" href="./style.css" />
 </head>
@@ -24,7 +24,7 @@
     <div id="intro-content">
       <div id="intro-terminal"></div>
       <div id="intro-bar"><div id="intro-bar-fill"></div></div>
-      <button id="intro-btn" style="display:none">[ ENTER SYSTEM ]</button>
+      <button id="intro-btn" style="display:none">[ LAUNCH ]</button>
     </div>
   </div>
 
@@ -35,6 +35,12 @@
       <div class="telem-row"><span class="telem-label">SPD</span><span id="telem-speed">000</span></div>
       <div class="telem-row"><span class="telem-label">ALT</span><span id="telem-alt">000</span></div>
       <div class="telem-row"><span class="telem-label">VEC</span><span id="telem-vec">+0.0 / +0.0</span></div>
+      <div class="telem-row telem-boost-row">
+        <span class="telem-label">THR</span>
+        <div id="telem-boost-track">
+          <div id="telem-boost-fill"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Center bottom identity + nav -->
@@ -46,7 +52,7 @@
         <button class="hud-nav-btn" data-panel="about">[ ABOUT ]</button>
         <button class="hud-nav-btn" data-panel="projects">[ PROJECTS ]</button>
         <button class="hud-nav-btn" data-panel="contact">[ CONTACT ]</button>
-        <button id="btn-freefly" class="hud-nav-btn">[ FREE FLY ]</button>
+        <button id="btn-freefly" class="hud-nav-btn">[ SCAN OFF ]</button>
       </div>
     </div>
 
@@ -83,7 +89,7 @@
             <span class="project-name">ERICK.DEV</span>
             <span class="project-tag">Three.js · WebGL · Vite</span>
           </div>
-          <p>Interactive 3D portfolio — cyberpunk city flythrough. You're flying through it right now. Built with instanced rendering, post-processing bloom, and procedural city generation.</p>
+          <p>Interactive 3D portfolio — neon space exploration. You're flying through it right now. Built with procedural planets, post-processing bloom, and synthwave aesthetics.</p>
         </div>
         <div class="project-item">
           <div class="project-header">
@@ -137,7 +143,7 @@
   <!-- PROJECT DIALOG -->
   <div id="project-dialog" class="project-dialog hidden">
     <div class="project-dialog-header">
-      <span class="project-dialog-tag">// PROJECT DETECTED</span>
+      <span class="project-dialog-tag">// PLANET SCAN COMPLETE</span>
       <button id="project-close">✕</button>
     </div>
     <h2 id="project-name"></h2>

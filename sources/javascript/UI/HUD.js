@@ -10,6 +10,7 @@ export default class HUD {
     this._speedEl = document.getElementById('telem-speed')
     this._altEl = document.getElementById('telem-alt')
     this._vecEl = document.getElementById('telem-vec')
+    this._boostFillEl = document.getElementById('telem-boost-fill')
 
     this._initPanels()
     this._initFullscreen()
@@ -60,7 +61,7 @@ export default class HUD {
       const world = this._exp.world
       if (!world?.projectDetector) return
       const enabled = world.projectDetector.toggle()
-      btn.textContent = enabled ? '[ FREE FLY ]' : '[ PROJECTS ON ]'
+      btn.textContent = enabled ? '[ SCAN OFF ]' : '[ SCAN ON ]'
     })
   }
 
@@ -70,9 +71,14 @@ export default class HUD {
     const speed = Math.round(v.length() * 10)
     const alt = Math.round(this.ship.mesh.position.y)
     const vx = v.x.toFixed(1)
+    const vy = v.y.toFixed(1)
     const vz = v.z.toFixed(1)
     this._speedEl.textContent = String(speed).padStart(3, '0')
     this._altEl.textContent = String(alt).padStart(3, '0')
-    this._vecEl.textContent = `${vx >= 0 ? '+' : ''}${vx} / ${vz >= 0 ? '+' : ''}${vz}`
+    this._vecEl.textContent = `${vx >= 0 ? '+' : ''}${vx} / ${vy >= 0 ? '+' : ''}${vy} / ${vz >= 0 ? '+' : ''}${vz}`
+    const normalizedSpeed = Math.min(v.length() / 28, 1)
+    const pct = Math.round(normalizedSpeed * 100)
+    this._boostFillEl.style.width = pct + '%'
+    this._boostFillEl.classList.toggle('boosting', this.ship.boost === true)
   }
 }

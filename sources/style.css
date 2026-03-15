@@ -35,8 +35,23 @@ canvas.webgl { position: fixed; top: 0; left: 0; outline: none; }
   position: absolute; top: 24px; left: 24px;
   font-size: 11px; color: #00f0ff55; line-height: 2;
 }
-.telem-row { display: flex; gap: 10px; }
+.telem-row { display: flex; gap: 10px; align-items: center; }
 .telem-label { color: #00f0ff33; min-width: 32px; }
+#telem-boost-track {
+  width: 80px; height: 4px;
+  background: #00f0ff11; border: 1px solid #00f0ff22;
+  position: relative; align-self: center;
+}
+#telem-boost-fill {
+  height: 100%; width: 0%;
+  background: #00f0ff;
+  box-shadow: 0 0 6px #00f0ff;
+  transition: width 0.05s linear, background 0.15s ease, box-shadow 0.15s ease;
+}
+#telem-boost-fill.boosting {
+  background: #ffffff;
+  box-shadow: 0 0 12px #00f0ff, 0 0 4px #ffffff;
+}
 
 /* Center bottom */
 #hud-center {
