@@ -43,9 +43,9 @@ export default class Renderer {
 
     this.bloomPass = new UnrealBloomPass(
       new THREE.Vector2(this.sizes.width, this.sizes.height),
-      0.8,  // strength: reduced from 1.2
-      0.5,  // radius
-      0.5   // threshold: raised from 0.1 — only bright emissives bloom now
+      0.7,  // strength
+      0.4,  // radius
+      0.55  // threshold: only very bright emissives bloom
     )
     this.composer.addPass(this.bloomPass)
 
