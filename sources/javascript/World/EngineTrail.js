@@ -1,61 +1,48 @@
 import * as THREE from 'three'
-import { randFloat, lerp } from '../utils/maths.js'
+import { lerp, randFloat } from '../utils/maths.js'
 
-const PARTICLE_COUNT = 450
+const PARTICLE_COUNT = 300
 
-const vertexShader = /* glsl */ `
-attribute float aOpacity;
-varying float vOpacity;
-void main() {
-  vOpacity = aOpacity;
-  vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-  gl_PointSize = aOpacity * 2.5 * (300.0 / -mvPosition.z);
-  gl_Position = projectionMatrix * mvPosition;
-}
+const vertexShader = /* glsl */`
+  attribute float aOpacity;
+  varying float vOpacity;
+
+  void main() {
+    vOpacity = aOpacity;
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
+    gl_PointSize = aOpacity * 1.2 * (200.0 / -mvPosition.z);
+  }
 `
 
-const fragmentShader = /* glsl */ `
-varying float vOpacity;
-void main() {
-  float d = length(gl_PointCoord - vec2(0.5));
-  if (d > 0.5) discard;
-  gl_FragColor = vec4(0.0, 0.8, 1.0, vOpacity * 0.85);
-}
-`
+const fragmentShader = /* glsl */`
+  varying float vOpacity;
 
-// Local-space nozzle positions matching Ship.js
-const NOZZLES = [
-  new THREE.Vector3(0,    0, 1.2),
-  new THREE.Vector3(-0.8, 0, 1.0),
-  new THREE.Vector3( 0.8, 0, 1.0),
-]
+  void main() {
+    float d = length(gl_PointCoord - 0.5);
+    if (d > 0.5) discard;
+    float alpha = (1.0 - d * 2.0) * vOpacity * 0.22;
+    gl_FragColor = vec4(0.0, 0.55, 0.8, alpha);
+  }
+`
 
 export default class EngineTrail {
   constructor(scene, shipMesh) {
     this.scene = scene
     this.shipMesh = shipMesh
 
-    // Parallel flat arrays
-    this.positions  = new Float32Array(PARTICLE_COUNT * 3)
+    this.positions = new Float32Array(PARTICLE_COUNT * 3)
+    this.opacities = new Float32Array(PARTICLE_COUNT)
+    this.lifetimes = new Float32Array(PARTICLE_COUNT)
+    this.maxLifetimes = new Float32Array(PARTICLE_COUNT)
     this.velocities = new Float32Array(PARTICLE_COUNT * 3)
-    this.ages       = new Float32Array(PARTICLE_COUNT)
-    this.lifetimes  = new Float32Array(PARTICLE_COUNT)
-    this.opacities  = new Float32Array(PARTICLE_COUNT)
 
-    // Hide all particles initially
+    // All particles start dead
     for (let i = 0; i < PARTICLE_COUNT; i++) {
-      this.positions[i * 3 + 1] = -9999
-      this.lifetimes[i] = 1
-      this.ages[i] = 1 // treat as dead
+      this.lifetimes[i] = -1
+      this.opacities[i] = 0
     }
 
-    this._head = 0
-    this._worldNozzle = new THREE.Vector3()
-
-    this._buildMesh()
-  }
-
-  _buildMesh() {
     const geo = new THREE.BufferGeometry()
     geo.setAttribute('position', new THREE.BufferAttribute(this.positions, 3))
     geo.setAttribute('aOpacity', new THREE.BufferAttribute(this.opacities, 1))
@@ -63,64 +50,70 @@ export default class EngineTrail {
     const mat = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
+      transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
-      depthTest: true,
-      transparent: true,
     })
 
     this.points = new THREE.Points(geo, mat)
     this.points.frustumCulled = false
     this.scene.add(this.points)
+
+    this._slot = 0
+    this._engineOffsets = [
+      new THREE.Vector3(-0.8, 0, 1.0), // left wing
+      new THREE.Vector3(0.8, 0, 1.0),  // right wing
+    ]
   }
 
-  update(delta, normalizedSpeed, boost, shipVelocity) {
-    // Ensure matrixWorld is current
-    this.shipMesh.updateMatrixWorld(false)
+  update(delta, normalizedSpeed, boost) {
+    const isIdle = normalizedSpeed < 0.05
+    const spawnPerEngine = 1 + Math.floor(lerp(0, boost ? 2 : 1, normalizedSpeed))
 
-    const spawnPerEngine = Math.floor(lerp(0, boost ? 3 : 2, normalizedSpeed))
-
-    for (const localNozzle of NOZZLES) {
-      this._worldNozzle.copy(localNozzle).applyMatrix4(this.shipMesh.matrixWorld)
-
+    // Spawn new particles
+    for (const offset of this._engineOffsets) {
       for (let s = 0; s < spawnPerEngine; s++) {
-        const slot = this._head % PARTICLE_COUNT
-        this._head++
+        const slot = this._slot % PARTICLE_COUNT
+        this._slot++
 
-        const si = slot * 3
-        this.positions[si]     = this._worldNozzle.x + randFloat(-0.02, 0.02)
-        this.positions[si + 1] = this._worldNozzle.y + randFloat(-0.02, 0.02)
-        this.positions[si + 2] = this._worldNozzle.z + randFloat(-0.02, 0.02)
+        // World position of engine exit
+        const worldPos = offset.clone().applyMatrix4(this.shipMesh.matrixWorld)
 
-        // Tight stream: minimal lateral spread, slow backward drift
-        const spread = boost ? 0.08 : 0.05
-        this.velocities[si]     = shipVelocity.x * -0.1 + randFloat(-spread, spread)
-        this.velocities[si + 1] = shipVelocity.y * -0.1 + randFloat(-spread, spread)
-        this.velocities[si + 2] = shipVelocity.z * -0.1 + randFloat(-spread, spread)
+        this.positions[slot * 3]     = worldPos.x + (Math.random() - 0.5) * 0.1
+        this.positions[slot * 3 + 1] = worldPos.y + (Math.random() - 0.5) * 0.1
+        this.positions[slot * 3 + 2] = worldPos.z + (Math.random() - 0.5) * 0.1
 
-        this.ages[slot]      = 0
-        this.lifetimes[slot] = randFloat(boost ? 0.1 : 0.2, boost ? 0.25 : 0.45)
-        this.opacities[slot] = 1.0
+        // Drift velocity — mostly backward along world -Z of ship
+        const spread = 0.3
+        this.velocities[slot * 3]     = (Math.random() - 0.5) * spread
+        this.velocities[slot * 3 + 1] = (Math.random() - 0.5) * spread * 0.5
+        this.velocities[slot * 3 + 2] = (Math.random() - 0.5) * spread
+
+        const maxLife = isIdle
+          ? randFloat(0.35, 0.6)
+          : randFloat(boost ? 0.1 : 0.18, boost ? 0.22 : 0.4)
+
+        this.maxLifetimes[slot] = maxLife
+        this.lifetimes[slot] = maxLife
+        this.opacities[slot] = isIdle ? 0.18 : (boost ? 0.7 : 0.4)
       }
     }
 
-    // Advance all particles
+    // Age all particles
     for (let i = 0; i < PARTICLE_COUNT; i++) {
-      if (this.ages[i] >= this.lifetimes[i]) continue
-
-      this.ages[i] += delta
-      if (this.ages[i] >= this.lifetimes[i]) {
-        this.positions[i * 3 + 1] = -9999
+      if (this.lifetimes[i] <= 0) {
         this.opacities[i] = 0
         continue
       }
+      this.lifetimes[i] -= delta
+      const t = Math.max(0, this.lifetimes[i] / this.maxLifetimes[i])
+      this.opacities[i] *= (1 - delta * 2.5) // fade out
+      if (this.opacities[i] < 0.01) this.opacities[i] = 0
 
-      const t = this.ages[i] / this.lifetimes[i]
-      const vi = i * 3
-      this.positions[vi]     += this.velocities[vi]     * delta
-      this.positions[vi + 1] += this.velocities[vi + 1] * delta
-      this.positions[vi + 2] += this.velocities[vi + 2] * delta
-      this.opacities[i] = 1.0 - t
+      // Drift
+      this.positions[i * 3]     += this.velocities[i * 3]     * delta
+      this.positions[i * 3 + 1] += this.velocities[i * 3 + 1] * delta
+      this.positions[i * 3 + 2] += this.velocities[i * 3 + 2] * delta
     }
 
     this.points.geometry.attributes.position.needsUpdate = true
