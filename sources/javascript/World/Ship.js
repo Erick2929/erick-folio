@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import Experience from '../Experience.js'
 import { lerp, clamp } from '../utils/maths.js'
+import EngineTrail from './EngineTrail.js'
 
 export default class Ship {
   constructor() {
@@ -106,6 +107,8 @@ export default class Ship {
     this.mesh.add(this.engineLight)
 
     this.scene.add(this.mesh)
+
+    this.trail = new EngineTrail(this.scene, this.mesh)
   }
 
   _setupInput() {
@@ -128,7 +131,7 @@ export default class Ship {
     this.mesh.rotation.y = this.rotationY
 
     // Bank (tilt on turns)
-    this.mesh.rotation.z = this.rotationVel * 0.25
+    this.mesh.rotation.z = -this.rotationVel * 0.25
 
     // Forward/back movement
     let thrust = 0
@@ -147,7 +150,7 @@ export default class Ship {
     // Vertical
     let vertInput = 0
     if (this.keys['KeyQ'] || this.keys['Space']) vertInput = 1
-    if (this.keys['KeyE'] || this.keys['ShiftLeft']) vertInput = -1
+    if (this.keys['KeyE']) vertInput = -1
     this.velocity.y = lerp(this.velocity.y, vertInput * vertSpeed, delta * 4)
 
     // Apply velocity
@@ -165,5 +168,10 @@ export default class Ship {
     const t = Date.now() * 0.003
     const speed2 = this.velocity.length()
     this.engineLight.intensity = 2 + Math.sin(t * 5) * 0.5 + speed2 * 0.15
+
+    // Engine trail
+    this.boost = this.keys['ShiftLeft'] || this.keys['ShiftRight']
+    const normalizedSpeed = clamp(speed2 / 28, 0, 1)
+    this.trail.update(delta, normalizedSpeed, this.boost, this.velocity)
   }
 }
