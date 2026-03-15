@@ -1,8 +1,8 @@
 import Experience from '../Experience.js'
 
 export default class ProjectDetector {
-  constructor(city, ship) {
-    this._city = city
+  constructor(galaxy, ship) {
+    this._galaxy = galaxy
     this._ship = ship
     this._enabled = true
     this._currentProject = null
@@ -47,25 +47,25 @@ export default class ProjectDetector {
     const now = Date.now()
     if (now - this._lastChange < 500) return
 
-    const buildings = this._city.getProjectBuildings()
-    if (!buildings.length) return
+    const planets = this._galaxy.getProjectPlanets()
+    if (!planets.length) return
 
-    const shipX = this._ship.mesh.position.x
-    const shipZ = this._ship.mesh.position.z
+    const shipPos = this._ship.mesh.position
 
-    const SHOW_DIST = 30
-    const HIDE_DIST = 40
+    const SHOW_DIST = 20
+    const HIDE_DIST = 30
 
     let nearest = null
     let nearestDist = Infinity
 
-    for (const b of buildings) {
-      const dx = shipX - b.x
-      const dz = shipZ - b.z
-      const dist = Math.sqrt(dx * dx + dz * dz)
-      if (dist < nearestDist) {
-        nearestDist = dist
-        nearest = b
+    for (const p of planets) {
+      const dx = shipPos.x - p.x
+      const dy = shipPos.y - p.y
+      const dz = shipPos.z - p.z
+      const surfaceDist = Math.sqrt(dx * dx + dy * dy + dz * dz) - (p.radius ?? 0)
+      if (surfaceDist < nearestDist) {
+        nearestDist = surfaceDist
+        nearest = p
       }
     }
 

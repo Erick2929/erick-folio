@@ -13,9 +13,9 @@ export default class Intro {
       '> loading llm.agent_framework........... OK',
       '> loading react.three_renderer.......... OK',
       '> loading human.profile................. OK',
-      '> spawning cyberpunk_world.............. OK',
-      '> all systems nominal.',
-      '> welcome to the grid.',
+      '> calibrating navigation.systems........ OK',
+      '> scanning planetary.objects............ 6 FOUND',
+      '> welcome to deep space.',
       ''
     ]
     this._lineIndex = 0
