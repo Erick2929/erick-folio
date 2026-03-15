@@ -1,0 +1,34 @@
+[
+  {
+    "id": "erick-dev",
+    "name": "ERICK.DEV",
+    "description": "Cyberpunk 3D portfolio built with Three.js — procedural city, custom flight mechanics, instanced rendering, post-processing bloom.",
+    "stack": ["Three.js", "GSAP", "Vite", "WebGL"],
+    "link": "https://ericksiller.dev",
+    "github": "https://github.com/ericksiller/erick-folio"
+  },
+  {
+    "id": "ai-chat",
+    "name": "AI CHAT PLATFORM",
+    "description": "Real-time AI assistant with streaming responses, retrieval-augmented generation pipeline, and multi-model support. Handles 1000+ concurrent sessions.",
+    "stack": ["LLM", "Streaming", "RAG", "Node.js"],
+    "link": "",
+    "github": ""
+  },
+  {
+    "id": "api-gateway",
+    "name": "DISTRIBUTED API GATEWAY",
+    "description": "High-throughput API gateway with gRPC microservices. 99.9% uptime, sub-2ms p50 latency under load. Replaced a legacy monolith.",
+    "stack": ["Go", "gRPC", "Kubernetes", "Docker"],
+    "link": "",
+    "github": ""
+  },
+  {
+    "id": "observability",
+    "name": "OBSERVABILITY PLATFORM",
+    "description": "Full-stack observability system with custom metrics pipeline, distributed tracing, and automated alerting. Replaced legacy monitoring stack.",
+    "stack": ["Python", "Metrics", "Tracing", "Alerting"],
+    "link": "",
+    "github": ""
+  }
+]

@@ -5,13 +5,16 @@ export default class HUD {
     const exp = Experience.getInstance()
     this.ship = exp.ship
     this.ticker = exp.ticker
+    this._exp = exp
 
     this._speedEl = document.getElementById('telem-speed')
     this._altEl = document.getElementById('telem-alt')
     this._vecEl = document.getElementById('telem-vec')
+    this._boostFillEl = document.getElementById('telem-boost-fill')
 
     this._initPanels()
     this._initFullscreen()
+    this._initFreeFly()
 
     this.ticker.events.on('tick', () => this._updateTelemetry(), 10)
   }
@@ -51,15 +54,31 @@ export default class HUD {
     })
   }
 
+  _initFreeFly() {
+    const btn = document.getElementById('btn-freefly')
+    if (!btn) return
+    btn.addEventListener('click', () => {
+      const world = this._exp.world
+      if (!world?.projectDetector) return
+      const enabled = world.projectDetector.toggle()
+      btn.textContent = enabled ? '[ SCAN OFF ]' : '[ SCAN ON ]'
+    })
+  }
+
   _updateTelemetry() {
     if (!this.ship?.velocity || !this.ship?.mesh) return
     const v = this.ship.velocity
     const speed = Math.round(v.length() * 10)
     const alt = Math.round(this.ship.mesh.position.y)
     const vx = v.x.toFixed(1)
+    const vy = v.y.toFixed(1)
     const vz = v.z.toFixed(1)
     this._speedEl.textContent = String(speed).padStart(3, '0')
     this._altEl.textContent = String(alt).padStart(3, '0')
-    this._vecEl.textContent = `${vx >= 0 ? '+' : ''}${vx} / ${vz >= 0 ? '+' : ''}${vz}`
+    this._vecEl.textContent = `${vx >= 0 ? '+' : ''}${vx} / ${vy >= 0 ? '+' : ''}${vy} / ${vz >= 0 ? '+' : ''}${vz}`
+    const normalizedSpeed = Math.min(v.length() / 28, 1)
+    const pct = Math.round(normalizedSpeed * 100)
+    this._boostFillEl.style.width = pct + '%'
+    this._boostFillEl.classList.toggle('boosting', this.ship.boost === true)
   }
 }
