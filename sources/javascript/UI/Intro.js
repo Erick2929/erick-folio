@@ -26,7 +26,7 @@ export default class Intro {
   }
 
   _start() {
-    this._interval = setInterval(() => this._type(), 28)
+    this._interval = setInterval(() => this._type(), 17)
   }
 
   _type() {
@@ -36,7 +36,7 @@ export default class Intro {
       setTimeout(() => {
         this._btn.style.display = 'block'
         this._btn.addEventListener('click', () => this._complete(), { once: true })
-      }, 400)
+      }, 150)
       return
     }
 
@@ -62,6 +62,6 @@ export default class Intro {
     setTimeout(() => {
       this._el.style.display = 'none'
       this.onComplete?.()
-    }, 1000)
+    }, 400)
   }
 }
