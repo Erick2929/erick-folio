@@ -173,7 +173,7 @@ export default class Ship {
     // Nose pitch when moving vertically
     this.mesh.rotation.x = lerp(
       this.mesh.rotation.x,
-      -this.velocity.y * 0.04,
+      this.velocity.y * 0.04,
       delta * 6,
     );
 
