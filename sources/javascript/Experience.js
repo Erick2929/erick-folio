@@ -36,6 +36,8 @@ export default class Experience {
       // Restart ticker after intro
       this.ticker._last = performance.now() * 0.001
       this.ticker._raf = requestAnimationFrame(this.ticker._bound)
+      // Start audio only after user clicks Launch
+      this.world.audio.start()
     })
   }
 }

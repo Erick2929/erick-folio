@@ -4,7 +4,9 @@ export default class Audio {
     this._audio.loop = true
     this._audio.volume = 0
     this._audio.preload = 'auto'
+  }
 
+  start() {
     this._fadeIn()
   }
 
