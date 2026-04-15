@@ -73,6 +73,7 @@ canvas.webgl { position: fixed; top: 0; left: 0; outline: none; }
 .hud-nav-btn:hover, .hud-nav-btn.active {
   border-color: #00f0ff; color: #00f0ff; box-shadow: 0 0 12px #00f0ff22;
 }
+a.hud-nav-btn { text-decoration: none; display: inline-block; }
 
 /* Fullscreen button — top right */
 #btn-fullscreen {
