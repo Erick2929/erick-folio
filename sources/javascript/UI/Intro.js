@@ -1,67 +1,49 @@
+import Experience from '../Experience.js'
+
+/** The title screen. Launches the run or drops straight into the CV for people in a hurry. */
 export default class Intro {
-  constructor(onComplete) {
-    this.onComplete = onComplete
-    this._el = document.getElementById('intro')
-    this._terminal = document.getElementById('intro-terminal')
-    this._bar = document.getElementById('intro-bar-fill')
-    this._btn = document.getElementById('intro-btn')
-    this._lines = [
-      '> initializing erick.siller v2.0.25...',
-      '> loading typescript.runtime............ OK',
-      '> loading python.ml_pipeline............ OK',
-      '> loading go.distributed_core........... OK',
-      '> loading llm.agent_framework........... OK',
-      '> loading react.three_renderer.......... OK',
-      '> loading human.profile................. OK',
-      '> calibrating navigation.systems........ OK',
-      '> scanning planetary.objects............ 6 FOUND',
-      '> welcome to deep space.',
-      ''
-    ]
-    this._lineIndex = 0
-    this._charIndex = 0
-    this._text = ''
-    this._interval = null
-    this._start()
+  constructor() {
+    const exp = Experience.getInstance()
+    this._exp = exp
+    this._el = document.getElementById('title')
+    this._best = document.getElementById('title-best')
+    this._launched = false
+
+    const best = exp.game.run.best
+    if (best) this._best.textContent = `BEST RUN · ${formatShipTime(best.shipTime)} · ${best.fragments} FRAGMENTS · ${best.score.toLocaleString()} PTS`
+
+    document.getElementById('btn-launch').addEventListener('click', () => this._launch())
+    document.getElementById('btn-cv').addEventListener('click', () => this._launch({ cvMode: true }))
+    exp.input.onKey('Enter', () => { if (!this._launched) this._launch() })
   }
 
-  _start() {
-    this._interval = setInterval(() => this._type(), 17)
-  }
-
-  _type() {
-    if (this._lineIndex >= this._lines.length) {
-      clearInterval(this._interval)
-      this._bar.style.width = '100%'
-      setTimeout(() => {
-        this._btn.style.display = 'block'
-        this._btn.addEventListener('click', () => this._complete(), { once: true })
-      }, 150)
-      return
-    }
-
-    const line = this._lines[this._lineIndex]
-
-    if (this._charIndex < line.length) {
-      this._text += line[this._charIndex]
-      this._charIndex++
-    } else {
-      this._text += '\n'
-      this._lineIndex++
-      this._charIndex = 0
-      const progress = (this._lineIndex / this._lines.length) * 100
-      this._bar.style.width = progress + '%'
-    }
-
-    this._terminal.textContent = this._text
-  }
-
-  _complete() {
+  _launch(options = {}) {
+    if (this._launched) return
+    this._launched = true
     this._el.classList.add('hidden')
     document.getElementById('hud').classList.add('visible')
-    setTimeout(() => {
-      this._el.style.display = 'none'
-      this.onComplete?.()
-    }, 400)
+    this._exp.game.launch(options)
+    if (options.cvMode) setTimeout(() => this._exp.panels.open('experience'), 600)
   }
+}
+
+export function formatShipTime(seconds) {
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+}
+
+/** Earth time can reach years near the horizon, so it scales its own units. */
+export function formatEarthTime(seconds) {
+  const YEAR = 365.25 * 24 * 3600
+  const DAY = 24 * 3600
+  if (seconds < DAY) {
+    const h = Math.floor(seconds / 3600)
+    const m = Math.floor((seconds % 3600) / 60)
+    const s = Math.floor(seconds % 60)
+    return h > 0 ? `${h}h ${String(m).padStart(2, '0')}m` : `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  }
+  const years = Math.floor(seconds / YEAR)
+  const days = Math.floor((seconds % YEAR) / DAY)
+  return years > 0 ? `${years}y ${days}d` : `${days}d ${Math.floor((seconds % DAY) / 3600)}h`
 }

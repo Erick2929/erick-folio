@@ -2,160 +2,260 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Erick Siller — Software Engineer</title>
-  <meta name="description" content="Erick Siller — Software Engineer specializing in AI systems, backend infrastructure, and distributed systems." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Erick Siller — Event Horizon</title>
+  <meta name="description" content="Erick Siller — software engineer working on AI systems. A playable portfolio: pilot a ship around a black hole, log every chapter of the career, then cross the horizon." />
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Erick Siller — Software Engineer" />
-  <meta property="og:description" content="Interactive 3D portfolio. Pilot a ship through a neon space exploration." />
+  <meta property="og:title" content="Erick Siller — Event Horizon" />
+  <meta property="og:description" content="A playable portfolio. Pilot a ship around a black hole and log every chapter of the career." />
   <meta property="og:image" content="/og-image.png" />
-  <meta property="og:url" content="https://ericksiller.dev" />
+  <meta property="og:url" content="https://www.ericksiller.com/" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Erick Siller — Software Engineer" />
-  <meta name="twitter:description" content="Interactive 3D portfolio. Pilot a ship through a neon space exploration." />
-  <meta name="twitter:image" content="/og-image.png" />
+  <meta name="twitter:title" content="Erick Siller — Event Horizon" />
+  <meta name="twitter:description" content="A playable portfolio. Pilot a ship around a black hole and log every chapter of the career." />
+  <meta name="theme-color" content="#030407" />
+  <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <canvas class="webgl"></canvas>
 
-  <!-- INTRO -->
-  <div id="intro">
-    <div id="intro-content">
-      <div id="intro-terminal"></div>
-      <div id="intro-bar"><div id="intro-bar-fill"></div></div>
-      <button id="intro-btn" style="display:none">[ LAUNCH ]</button>
-    </div>
-  </div>
+  <!-- TITLE SCREEN -->
+  <section id="title" class="screen">
+    <div class="title-grid">
+      <header class="title-top">
+        <span class="brand">ericksiller</span>
+        <nav class="title-links">
+          <a href="https://github.com/Erick2929" target="_blank" rel="noopener">github</a>
+          <a href="https://www.linkedin.com/in/ericksiller/" target="_blank" rel="noopener">linkedin</a>
+        </nav>
+      </header>
 
-  <!-- HUD OVERLAY (full-screen, pointer-events: none by default) -->
-  <div id="hud">
-    <!-- Telemetry top-left -->
-    <div id="hud-telemetry">
-      <div class="telem-row"><span class="telem-label">SPD</span><span id="telem-speed">000</span></div>
-      <div class="telem-row"><span class="telem-label">ALT</span><span id="telem-alt">000</span></div>
-      <div class="telem-row"><span class="telem-label">VEC</span><span id="telem-vec">+0.0 / +0.0</span></div>
-      <div class="telem-row telem-boost-row">
-        <span class="telem-label">THR</span>
-        <div id="telem-boost-track">
-          <div id="telem-boost-fill"></div>
+      <div class="title-main">
+        <div class="eyebrow">// A PLAYABLE PORTFOLIO</div>
+        <h1 class="title-name">ERICK<br />SILLER</h1>
+        <div class="title-sub">EVENT HORIZON</div>
+        <p class="title-tag">
+          Software engineer · AI systems · builder. Every chapter of the career orbits a black hole.
+          Pilot the ship, log them all, then cross the horizon.
+        </p>
+        <div class="title-actions">
+          <button id="btn-launch" class="btn btn-primary">[ LAUNCH ]</button>
+          <button id="btn-cv" class="btn">[ SKIP TO THE CV ]</button>
         </div>
+        <div id="title-best" class="title-best"></div>
+      </div>
+
+      <div class="title-controls">
+        <div class="ctl-list touch">
+          <div class="ctl"><span class="keys"><kbd>LEFT</kbd></span><span>drag anywhere to steer</span></div>
+          <div class="ctl"><span class="keys"><kbd>THRUST</kbd></span><span>hold to fly · CRUISE keeps flying</span></div>
+          <div class="ctl"><span class="keys"><kbd>BOOST</kbd></span><span>hold · fuel cells refill it</span></div>
+          <div class="ctl"><span class="keys"><kbd>BRAKE</kbd></span><span>slow down to scan</span></div>
+          <div class="ctl"><span class="keys"><kbd>FIRE</kbd></span><span>hold to shoot · tap to pulse</span></div>
+          <div class="ctl-note">Landscape and sound on for the best ride</div>
+        </div>
+        <div class="ctl-list keyboard">
+        <div class="ctl"><span class="keys"><kbd>W</kbd><kbd>S</kbd></span><span>thrust · brake</span></div>
+        <div class="ctl"><span class="keys"><kbd>A</kbd><kbd>D</kbd></span><span>yaw</span></div>
+        <div class="ctl"><span class="keys"><kbd>↑</kbd><kbd>↓</kbd></span><span>pitch</span></div>
+        <div class="ctl"><span class="keys"><kbd>SHIFT</kbd><kbd>SPACE</kbd></span><span>boost</span></div>
+        <div class="ctl"><span class="keys"><kbd>F</kbd></span><span>fire · click also fires</span></div>
+        <div class="ctl"><span class="keys"><kbd>R</kbd></span><span>scanner pulse</span></div>
+        <div class="ctl"><span class="keys"><kbd>H</kbd></span><span>photo mode</span></div>
+        <div class="ctl"><span class="keys"><kbd>ESC</kbd></span><span>pause · achievements</span></div>
+        <div class="ctl-note">Mouse drag also steers · Fuel cells refill boost · Best with sound on</div>
+        </div>
+      </div>
+
+      <footer class="title-foot">
+        <span>Monterrey, MX · remote</span>
+        <span>three.js · screen-space lensing · procedural audio</span>
+      </footer>
+    </div>
+  </section>
+
+  <!-- IN-FLIGHT HUD -->
+  <div id="hud">
+    <div id="hud-telemetry" class="hud-block">
+      <div class="telem-row"><span class="telem-label">SPD</span><span id="telem-speed" class="telem-value">000</span></div>
+      <div class="telem-row"><span class="telem-label">PULL</span><span id="telem-pull" class="telem-value">0.0g</span></div>
+      <div class="telem-row"><span class="telem-label">HRZN</span><span id="telem-horizon" class="telem-value">000u</span></div>
+      <div class="telem-row"><span class="telem-label">HULL</span><div class="bar"><div id="hull-fill" class="bar-fill hull"></div></div></div>
+      <div class="telem-row"><span class="telem-label">BOOST</span><div class="bar"><div id="boost-fill" class="bar-fill boost"></div></div></div>
+      <div class="telem-row"><span class="telem-label"></span><span id="boost-note" class="boost-note"></span></div>
+      <div class="telem-clocks">
+        <div class="telem-row"><span class="telem-label">SHIP</span><span id="clock-ship" class="telem-value">00:00</span></div>
+        <div class="telem-row"><span class="telem-label">EARTH</span><span id="clock-earth" class="telem-value">00:00</span></div>
       </div>
     </div>
 
-    <!-- Center bottom identity + nav -->
+    <div id="hud-mission" class="hud-block">
+      <div class="hud-block-title">MISSION LOG</div>
+      <ul id="mission-list"></ul>
+      <div class="hud-stats">
+        <span>FRAGMENTS <b id="frag-count">00/00</b></span>
+        <span>SCORE <b id="score">0</b></span>
+      </div>
+      <div id="horizon-status" class="sealed">HORIZON · SEALED</div>
+    </div>
+
+    <div id="race-hud" class="hidden">
+      <div id="race-name">TIME TRIAL</div>
+      <div id="race-time">00:00.00</div>
+      <div class="race-sub"><span id="race-gate">GATE 1/15</span><span id="race-best"></span></div>
+    </div>
+    <div id="countdown" class="hidden">3</div>
+    <div id="score-pop" class="score-pop"></div>
+
+    <div id="reticle">
+      <svg viewBox="0 0 80 80" width="80" height="80">
+        <circle class="scan-track" cx="40" cy="40" r="34" />
+        <circle id="scan-ring" cx="40" cy="40" r="34" />
+        <line x1="40" y1="2" x2="40" y2="10" /><line x1="40" y1="70" x2="40" y2="78" />
+        <line x1="2" y1="40" x2="10" y2="40" /><line x1="70" y1="40" x2="78" y2="40" />
+      </svg>
+      <div id="scan-label"></div>
+    </div>
+
+    <div id="marker" class="hidden">
+      <div class="marker-box"></div>
+      <div class="marker-arrow"></div>
+      <div class="marker-text"><span id="marker-name"></span><span id="marker-dist"></span></div>
+    </div>
+
+    <div id="alerts"></div>
+
+    <canvas id="radar" width="176" height="176"></canvas>
+
     <div id="hud-center">
       <div id="hud-name">ERICK SILLER</div>
       <div id="hud-role">SOFTWARE ENGINEER · AI SYSTEMS · BUILDER</div>
-      <div id="hud-controls">WASD · MOVE &nbsp;|&nbsp; QE · ALTITUDE &nbsp;|&nbsp; SHIFT · BOOST</div>
+      <button id="btn-cv-menu" class="hud-nav-btn cv-menu">CV ▾</button>
       <div id="hud-nav">
-        <button class="hud-nav-btn" data-panel="about">[ ABOUT ]</button>
-        <button class="hud-nav-btn" data-panel="projects">[ PROJECTS ]</button>
-        <button class="hud-nav-btn" data-panel="contact">[ CONTACT ]</button>
-        <a id="btn-blog" class="hud-nav-btn" href="https://blog.erick.com" target="_blank" rel="noopener">[ BLOG ]</a>
-        <button id="btn-freefly" class="hud-nav-btn">[ SCAN OFF ]</button>
+        <button class="hud-nav-btn" data-panel="about">ABOUT</button>
+        <button class="hud-nav-btn" data-panel="experience">EXPERIENCE</button>
+        <button class="hud-nav-btn" data-panel="projects">PROJECTS</button>
+        <button class="hud-nav-btn" data-panel="skills">SKILLS</button>
+        <button class="hud-nav-btn" data-panel="education">EDUCATION</button>
+        <button class="hud-nav-btn" data-panel="contact">CONTACT</button>
+      </div>
+      <div id="hud-controls">W S THRUST · A D YAW · ↑ ↓ PITCH · SHIFT/SPACE BOOST · F FIRE · R PULSE · H PHOTO · ESC PAUSE</div>
+    </div>
+
+    <div id="rotate-hint">ROTATE FOR THE BEST VIEW</div>
+
+    <div id="hud-corner">
+      <button id="btn-sound" class="icon-btn" title="Sound">♪</button>
+      <button id="btn-fullscreen" class="icon-btn" title="Fullscreen">⛶</button>
+      <button id="btn-pause" class="icon-btn" title="Pause">II</button>
+    </div>
+  </div>
+
+  <!-- CV PANELS (filled by UI/Panels.js) -->
+  <div class="portfolio-panel" id="panel-about"><div class="panel-inner"><button class="panel-close">[ CLOSE ]</button><h2>ABOUT</h2><div class="panel-body"></div></div></div>
+  <div class="portfolio-panel" id="panel-experience"><div class="panel-inner"><button class="panel-close">[ CLOSE ]</button><h2>EXPERIENCE</h2><div class="panel-body"></div></div></div>
+  <div class="portfolio-panel" id="panel-projects"><div class="panel-inner"><button class="panel-close">[ CLOSE ]</button><h2>PROJECTS</h2><div class="panel-body"></div></div></div>
+  <div class="portfolio-panel" id="panel-skills"><div class="panel-inner"><button class="panel-close">[ CLOSE ]</button><h2>SKILLS</h2><div class="panel-body"></div></div></div>
+  <div class="portfolio-panel" id="panel-education"><div class="panel-inner"><button class="panel-close">[ CLOSE ]</button><h2>EDUCATION</h2><div class="panel-body"></div></div></div>
+  <div class="portfolio-panel" id="panel-contact"><div class="panel-inner"><button class="panel-close">[ CLOSE ]</button><h2>CONTACT</h2><div class="panel-body"></div></div></div>
+
+  <!-- SCAN / DOCK LOG ENTRY -->
+  <div id="log-dialog" class="dialog hidden">
+    <div class="dialog-tag" id="log-tag">// LOG ENTRY · SCAN COMPLETE</div>
+    <h2 id="log-title"></h2>
+    <div id="log-meta" class="log-meta"></div>
+    <p id="log-summary"></p>
+    <ul id="log-highlights"></ul>
+    <div id="log-skills" class="chips"></div>
+    <div class="dialog-actions">
+      <a id="log-link" class="btn" href="#" target="_blank" rel="noopener">VISIT →</a>
+      <button id="log-continue" class="btn btn-primary">[ CONTINUE ]</button>
+    </div>
+  </div>
+
+  <!-- RACE RESULTS -->
+  <div id="race-dialog" class="dialog race-dialog hidden">
+    <div id="race-result-tag" class="dialog-tag">// TIME TRIAL · RESULTS</div>
+    <h2 id="race-result-title">TIME TRIAL COMPLETE</h2>
+    <div id="race-result-time" class="race-time">00:00.00</div>
+    <div id="race-result-note" class="race-note"></div>
+    <ol id="race-board" class="board"></ol>
+    <div class="dialog-actions">
+      <button id="race-continue" class="btn">[ CONTINUE ]</button>
+      <button id="race-again" class="btn btn-primary">[ RACE AGAIN ]</button>
+    </div>
+  </div>
+
+  <!-- PAUSE -->
+  <section id="pause" class="screen hidden">
+    <div class="pause-card">
+      <div class="eyebrow">// PAUSED</div>
+      <h2>EVENT HORIZON</h2>
+      <div class="pause-actions">
+        <button id="btn-resume" class="btn btn-primary">[ RESUME ]</button>
+        <button id="btn-restart" class="btn">[ RESTART RUN ]</button>
+        <button id="btn-race-trial" class="btn">[ START TIME TRIAL ]</button>
+        <button id="btn-range" class="btn">[ TARGET RANGE ]</button>
+        <button id="btn-abort-race" class="btn hidden">[ ABORT RACE ]</button>
+        <button id="btn-pause-sound" class="btn">[ SOUND: ON ]</button>
+      </div>
+      <div id="pause-best" class="pause-best"></div>
+      <p class="pause-touch">Drag on the left half to steer. Hold THRUST or switch CRUISE on to fly, hold BOOST for speed, BRAKE to slow down near a world. Hold FIRE to shoot, tap it to pulse for fragments.</p>
+      <div class="pause-controls keyboard">
+        <div><kbd>W</kbd><kbd>S</kbd> thrust · brake</div>
+        <div><kbd>A</kbd><kbd>D</kbd> yaw</div>
+        <div><kbd>↑</kbd><kbd>↓</kbd> pitch</div>
+        <div><kbd>SHIFT</kbd><kbd>SPACE</kbd> boost</div>
+        <div><kbd>F</kbd> fire · click fires too</div>
+        <div><kbd>R</kbd> scanner pulse</div>
+        <div><kbd>H</kbd> photo mode</div>
+        <div><kbd>G</kbd> fullscreen</div>
+      </div>
+      <p class="pause-tip">Scan a world by holding position near it. Debris and the disk plasma damage the hull. Fuel cells refill the boost reserve and grant overdrive. Amber beacons start races, the red one starts the target range; the horizon only opens once every chapter is logged.</p>
+      <div id="achievements-count" class="hud-block-title"></div>
+      <div id="achievements" class="ach-grid"></div>
+    </div>
+  </section>
+
+  <!-- FINALE -->
+  <section id="finale" class="screen hidden">
+    <canvas id="tesseract"></canvas>
+    <div id="transmission" class="hidden">
+      <div class="eyebrow">// TRANSMISSION FROM BEYOND THE HORIZON</div>
+      <h2>YOU MADE IT ACROSS.</h2>
+      <p class="tx-copy">Every chapter logged. What comes next is the part that hasn't been written yet — let's write it together.</p>
+      <div class="tx-stats">
+        <div><span class="tx-label">SHIP TIME</span><b id="tx-ship">00:00</b></div>
+        <div><span class="tx-label">EARTH TIME</span><b id="tx-earth">00:00</b></div>
+        <div><span class="tx-label">FRAGMENTS</span><b id="tx-frags">0/0</b></div>
+        <div><span class="tx-label">SCORE</span><b id="tx-score">0</b></div>
+      </div>
+      <div id="tx-best" class="tx-best"></div>
+      <div id="tx-ach" class="tx-ach"></div>
+      <div id="tx-contact" class="tx-contact"></div>
+      <div class="tx-actions">
+        <button id="btn-freeflight" class="btn btn-primary">[ FREE FLIGHT ]</button>
+        <button id="btn-replay" class="btn">[ REPLAY ]</button>
       </div>
     </div>
+  </section>
 
-    <!-- Fullscreen top-right -->
-    <button id="btn-fullscreen" title="Toggle fullscreen">⛶</button>
-  </div>
-
-  <!-- PORTFOLIO PANELS -->
-  <div class="portfolio-panel" id="panel-about">
-    <div class="panel-inner">
-      <button class="panel-close">[ CLOSE ]</button>
-      <h2>ERICK SILLER</h2>
-      <p class="panel-subtitle">Software Engineer · AI Systems · Builder</p>
-      <div class="panel-body">
-        <p>Building at the intersection of AI, backend infrastructure, and developer experience. Focused on LLM-powered products, distributed systems, and anything that ships fast and runs reliably.</p>
-        <div class="panel-skills">
-          <div class="skill-group"><span class="skill-label">LANGUAGES</span><span>TypeScript · Python · Go · Rust</span></div>
-          <div class="skill-group"><span class="skill-label">FRONTEND</span><span>React · Three.js · Next.js · WebGL</span></div>
-          <div class="skill-group"><span class="skill-label">BACKEND</span><span>Node.js · FastAPI · Go HTTP · gRPC</span></div>
-          <div class="skill-group"><span class="skill-label">AI / ML</span><span>LLM Integration · RAG · Vector DBs · Agents</span></div>
-          <div class="skill-group"><span class="skill-label">INFRA</span><span>Docker · K8s · AWS · Terraform · CI/CD</span></div>
-        </div>
-      </div>
+  <!-- TOUCH CONTROLS -->
+  <div id="touch" class="hidden">
+    <div id="touch-steer"><div id="joystick"><div id="joystick-knob"></div></div></div>
+    <div id="touch-buttons">
+      <button id="touch-cruise" class="touch-toggle">CRUISE</button>
+      <button id="touch-boost" class="touch-btn">BOOST</button>
+      <button id="touch-thrust" class="touch-btn touch-thrust">THRUST</button>
+      <button id="touch-pulse" class="touch-btn">FIRE</button>
+      <button id="touch-brake" class="touch-btn">BRAKE</button>
     </div>
   </div>
 
-  <div class="portfolio-panel" id="panel-projects">
-    <div class="panel-inner">
-      <button class="panel-close">[ CLOSE ]</button>
-      <h2>PROJECTS</h2>
-      <div class="panel-body">
-        <div class="project-item">
-          <div class="project-header">
-            <span class="project-name">ERICK.DEV</span>
-            <span class="project-tag">Three.js · WebGL · Vite</span>
-          </div>
-          <p>Interactive 3D portfolio — neon space exploration. You're flying through it right now. Built with procedural planets, post-processing bloom, and synthwave aesthetics.</p>
-        </div>
-        <div class="project-item">
-          <div class="project-header">
-            <span class="project-name">AI Chat Platform</span>
-            <span class="project-tag">LLM · Streaming · RAG</span>
-          </div>
-          <p>Real-time AI assistant with streaming responses, retrieval-augmented generation pipeline, and multi-model support. Handles 1000+ concurrent sessions.</p>
-        </div>
-        <div class="project-item">
-          <div class="project-header">
-            <span class="project-name">Distributed API Gateway</span>
-            <span class="project-tag">Go · gRPC · Kubernetes</span>
-          </div>
-          <p>High-throughput API gateway with gRPC microservices. 99.9% uptime, sub-2ms p50 latency under load. Replaced legacy monolith.</p>
-        </div>
-        <div class="project-item">
-          <div class="project-header">
-            <span class="project-name">Observability Platform</span>
-            <span class="project-tag">Metrics · Tracing · Python</span>
-          </div>
-          <p>Full-stack observability system with custom metrics pipeline, distributed tracing, and automated alerting. Replaced legacy monitoring stack.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="portfolio-panel" id="panel-contact">
-    <div class="panel-inner">
-      <button class="panel-close">[ CLOSE ]</button>
-      <h2>CONTACT</h2>
-      <div class="panel-body">
-        <p>Available for senior/staff engineering roles, consulting, and interesting problems.</p>
-        <div class="contact-links">
-          <a href="mailto:erick@siller.dev" class="contact-item">
-            <span class="contact-label">EMAIL</span>
-            <span>erick@siller.dev</span>
-          </a>
-          <a href="https://github.com/ericksiller" target="_blank" rel="noopener" class="contact-item">
-            <span class="contact-label">GITHUB</span>
-            <span>github.com/ericksiller</span>
-          </a>
-          <a href="https://linkedin.com/in/ericksiller" target="_blank" rel="noopener" class="contact-item">
-            <span class="contact-label">LINKEDIN</span>
-            <span>linkedin.com/in/ericksiller</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PROJECT DIALOG -->
-  <div id="project-dialog" class="project-dialog hidden">
-    <div class="project-dialog-header">
-      <span class="project-dialog-tag">// PLANET SCAN COMPLETE</span>
-      <button id="project-close">✕</button>
-    </div>
-    <h2 id="project-name"></h2>
-    <p id="project-desc"></p>
-    <div id="project-stack"></div>
-    <div class="project-dialog-links">
-      <a id="project-link" href="#" target="_blank" rel="noreferrer">VISIT →</a>
-      <a id="project-github" href="#" target="_blank" rel="noreferrer">GITHUB →</a>
-    </div>
-  </div>
-
-  <script type="module" src="./javascript/Experience.js"></script>
+  <script type="module" src="./javascript/main.js"></script>
 </body>
 </html>

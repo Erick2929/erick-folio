@@ -30,7 +30,7 @@ export default class SpaceDust {
     const coldGeo = new THREE.BufferGeometry()
     coldGeo.setAttribute('position', new THREE.BufferAttribute(coldPositions, 3))
     const coldMat = new THREE.PointsMaterial({
-      color: 0xaabbff,
+      color: 0xb8c4ee,
       size: 0.06,
       transparent: true,
       opacity: 0.5,
@@ -43,7 +43,7 @@ export default class SpaceDust {
     const warmGeo = new THREE.BufferGeometry()
     warmGeo.setAttribute('position', new THREE.BufferAttribute(warmPositions, 3))
     const warmMat = new THREE.PointsMaterial({
-      color: 0xffddaa,
+      color: 0xffd7b0,
       size: 0.06,
       transparent: true,
       opacity: 0.4,
@@ -70,7 +70,7 @@ export default class SpaceDust {
   }
 
   _update(delta) {
-    const shipPos = this.ship?.mesh?.position
+    const shipPos = this.ship?.position
     if (!shipPos) return
 
     const RESPAWN_DIST = 150

@@ -1,190 +1,313 @@
-import * as THREE from "three";
-import Experience from "../Experience.js";
-import { lerp, clamp } from "../utils/maths.js";
-import EngineTrail from "./EngineTrail.js";
+import * as THREE from 'three'
+import Experience from '../Experience.js'
+import Events from '../Events.js'
+import EngineTrail from './EngineTrail.js'
+import BoostReserve from '../Game/Boost.js'
+import { SHIP_LAYER } from '../Renderer.js'
+import { lerp, clamp } from '../utils/maths.js'
 
+const YAW_RATE = 1.75
+const PITCH_RATE = 1.35
+const CRUISE_SPEED = 26
+const BOOST_SPEED = 54
+const SHIP_RADIUS = 1.6
+const HULL_MAX = 100
+const HIT_GRACE_SECONDS = 0.6
+const DEBRIS_HIT_MAX = 18
+
+const _fwd = new THREE.Vector3()
+const _up = new THREE.Vector3()
+const _right = new THREE.Vector3()
+const _target = new THREE.Vector3()
+const _gravity = new THREE.Vector3()
+const _q = new THREE.Quaternion()
+const _n = new THREE.Vector3()
+const _c = new THREE.Vector3()
+const _m = new THREE.Matrix4()
+const _hit = { normal: new THREE.Vector3(), depth: 0, rock: null }
+
+/**
+ * The player's ship: quaternion flight model with yaw, pitch, thrust, a boost reserve, hull,
+ * gravity from the singularity, and collisions with worlds and debris.
+ *
+ * Events: 'damage' (amount, source), 'destroyed', 'horizon', 'collide' (impact, name), 'bounds' (outside),
+ * 'boost-denied' (the reserve refused a press).
+ */
 export default class Ship {
   constructor() {
-    const exp = Experience.getInstance();
-    this.scene = exp.scene;
-    this.ticker = exp.ticker;
-    this.camera = exp.camera;
+    const exp = Experience.getInstance()
+    this.scene = exp.scene
+    this.ticker = exp.ticker
+    this.input = exp.input
+    this.camera = exp.camera
+    this.renderer = exp.renderer
+    this.events = new Events()
 
-    // State
-    this.velocity = new THREE.Vector3();
-    this._forward = new THREE.Vector3();
-    this.rotationY = 0;
-    this.rotationVel = 0;
-    this.boost = false;
+    this.group = new THREE.Group()
+    this.position = this.group.position
+    this.quaternion = this.group.quaternion
+    this.velocity = new THREE.Vector3()
+    this.hull = HULL_MAX
+    this.reserve = new BoostReserve({ boostSeconds: 6, rechargeSeconds: 5, relockAt: 0.25 })
+    this.boostAmount = 0
+    this.speedNorm = 0
+    this.pull = 0
+    this.heat = 0
+    this.locked = true
+    this.outOfBounds = false
+    this.destroyed = false
+    this._yawVel = 0
+    this._pitchVel = 0
+    this._bank = 0
+    this._sinceDamage = 10
+    this._sinceHit = 10
+    this._horizonArmed = true
+    this._checkpoint = { position: new THREE.Vector3(0, 0, 300), lookAt: new THREE.Vector3(0, 0, 0) }
+    this._world = null
 
-    this.keys = {};
-    this._setupInput();
-    this._createMesh();
-    this.camera.followTarget(this.mesh);
+    this._createMesh()
+    this.scene.add(this.group)
+    this.trail = new EngineTrail(this.scene, this.group)
+    this.camera.followTarget(this)
 
-    this.ticker.events.on("tick", (delta) => this._update(delta), 2);
+    this.ticker.events.on('tick', (delta, elapsed) => this._update(delta, elapsed), 2)
   }
 
   _createMesh() {
-    this.mesh = new THREE.Group();
-    this.mesh.position.set(0, 0, 0);
+    const hull = new THREE.MeshStandardMaterial({ color: 0xc9d3df, metalness: 0.82, roughness: 0.28, emissive: 0x101820, emissiveIntensity: 0.6 })
+    const dark = new THREE.MeshStandardMaterial({ color: 0x2b3440, metalness: 0.7, roughness: 0.5 })
+    const glass = new THREE.MeshStandardMaterial({ color: 0x143a5a, metalness: 0.4, roughness: 0.1, emissive: 0x1b78b8, emissiveIntensity: 0.9, transparent: true, opacity: 0.85 })
+    const amber = new THREE.MeshBasicMaterial({ color: 0xffb35c })
+    const engineGlow = new THREE.MeshBasicMaterial({ color: 0x3f8fb4 })
 
-    // Body - main hull
-    const bodyGeo = new THREE.ConeGeometry(0.6, 2.5, 6);
-    bodyGeo.rotateX(-Math.PI / 2);
-    const bodyMat = new THREE.MeshStandardMaterial({
-      color: 0xddeeff,
-      metalness: 0.85,
-      roughness: 0.12,
-      emissive: 0x3366cc,
-      emissiveIntensity: 0.25,
-    });
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    this.mesh.add(body);
+    const model = new THREE.Group()
+    this.model = model
 
-    // Wings
-    const wingGeo = new THREE.BoxGeometry(3, 0.08, 0.8);
-    const wingMat = new THREE.MeshStandardMaterial({
-      color: 0xc8d8f0,
-      metalness: 0.92,
-      roughness: 0.1,
-      emissive: 0x112255,
-      emissiveIntensity: 0.18,
-    });
-    const wings = new THREE.Mesh(wingGeo, wingMat);
-    wings.position.z = 0.1;
-    this.mesh.add(wings);
+    const fuselage = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.95, 4.4, 6), hull)
+    fuselage.rotation.x = Math.PI / 2
+    fuselage.rotation.y = Math.PI / 6
+    model.add(fuselage)
 
-    // Engine glow (back)
-    const engineGeo = new THREE.CylinderGeometry(0.15, 0.25, 0.4, 8);
-    const engineMat = new THREE.MeshStandardMaterial({
-      color: 0x00aaff,
-      emissive: 0x00aaff,
-      emissiveIntensity: 0.5,
-      transparent: true,
-      opacity: 0.9,
-    });
-    const engine = new THREE.Mesh(engineGeo, engineMat);
-    engine.position.set(0, 0, 1.2);
-    engine.rotation.x = Math.PI / 2;
-    this.mesh.add(engine);
+    const spine = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 2.4), dark)
+    spine.position.set(0, 0.35, -0.6)
+    model.add(spine)
 
-    // Two side engines
-    for (const side of [-0.8, 0.8]) {
-      const sideEngine = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.08, 0.12, 0.3, 6),
-        new THREE.MeshStandardMaterial({
-          color: 0x00ccff,
-          emissive: 0x00ccff,
-          emissiveIntensity: 0.6,
-          transparent: true,
-          opacity: 0.8,
-        }),
-      );
-      sideEngine.position.set(side, 0, 1.0);
-      sideEngine.rotation.x = Math.PI / 2;
-      this.mesh.add(sideEngine);
+    const cockpit = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 8), glass)
+    cockpit.scale.set(1, 0.7, 1.5)
+    cockpit.position.set(0, 0.42, 0.55)
+    model.add(cockpit)
+
+    for (const side of [-1, 1]) {
+      const wing = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.08, 1.4), hull)
+      wing.position.set(side * 1.75, -0.05, -0.55)
+      wing.rotation.y = side * 0.42
+      wing.rotation.z = side * -0.08
+      model.add(wing)
+
+      const strip = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.05, 0.08), amber)
+      strip.position.set(side * 1.9, 0.0, -0.05)
+      strip.rotation.y = side * 0.42
+      model.add(strip)
+
+      const pod = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.36, 1.5, 8), dark)
+      pod.rotation.x = Math.PI / 2
+      pod.position.set(side * 1.0, -0.05, -1.35)
+      model.add(pod)
+
+      const nozzle = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.3, 0.25, 8), engineGlow)
+      nozzle.rotation.x = Math.PI / 2
+      nozzle.position.set(side * 1.0, -0.05, -2.15)
+      model.add(nozzle)
     }
 
-    // Cockpit glass
-    const cockpitGeo = new THREE.SphereGeometry(
-      0.3,
-      8,
-      6,
-      0,
-      Math.PI * 2,
-      0,
-      Math.PI * 0.5,
-    );
-    cockpitGeo.rotateX(-Math.PI);
-    const cockpitMat = new THREE.MeshStandardMaterial({
-      color: 0x003366,
-      emissive: 0x001a44,
-      emissiveIntensity: 0.5,
-      transparent: true,
-      opacity: 0.6,
-      metalness: 0.5,
-    });
-    const cockpit = new THREE.Mesh(cockpitGeo, cockpitMat);
-    cockpit.position.set(0, 0.15, -0.5);
-    this.mesh.add(cockpit);
+    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.9, 1.2), hull)
+    fin.position.set(0, 0.75, -1.4)
+    fin.rotation.x = 0.35
+    model.add(fin)
 
-    // Engine light
-    this.engineLight = new THREE.PointLight(0x00aaff, 3, 8);
-    this.engineLight.position.set(0, 0, 1.5);
-    this.mesh.add(this.engineLight);
+    this.engineLight = new THREE.PointLight(0x9fe6ff, 40, 9, 2)
+    this.engineLight.position.set(0, 0, -2.3)
+    model.add(this.engineLight)
 
-    this.scene.add(this.mesh);
+    const fill = new THREE.PointLight(0xffd9b0, 30, 9, 2)
+    fill.position.set(0, 2.5, 1.5)
+    model.add(fill)
 
-    this.trail = new EngineTrail(this.scene, this.mesh);
+    model.traverse((o) => o.layers.set(SHIP_LAYER))
+    this.group.add(model)
   }
 
-  _setupInput() {
-    window.addEventListener("keydown", (e) => {
-      this.keys[e.code] = true;
-    });
-    window.addEventListener("keyup", (e) => {
-      this.keys[e.code] = false;
-    });
+  setWorld(world) { this._world = world }
+
+  getForward(out) { return out.set(0, 0, 1).applyQuaternion(this.quaternion) }
+  getUp(out) { return out.set(0, 1, 0).applyQuaternion(this.quaternion) }
+  getRight(out) { return out.set(1, 0, 0).applyQuaternion(this.quaternion) }
+
+  get boostEnergy() { return this.reserve.energy }
+
+  /** Fuel cell pickup: full reserve plus a window of overdrive. */
+  refuel(overdriveSeconds = 15) { this.reserve.refuel(overdriveSeconds) }
+
+  get distanceToHorizon() {
+    return this._world ? this._world.blackHole.distanceTo(this.position) - this._world.blackHole.rs : Infinity
   }
 
-  _update(delta) {
-    const speed = this.keys["ShiftLeft"] || this.keys["ShiftRight"] ? 28 : 14;
-    const turnSpeed = 1.6;
-    const vertSpeed = 8;
+  lock() { this.locked = true }
+  unlock() { this.locked = false }
 
-    // Rotation
-    let turnInput = 0;
-    if (this.keys["KeyA"] || this.keys["ArrowLeft"]) turnInput += 1;
-    if (this.keys["KeyD"] || this.keys["ArrowRight"]) turnInput -= 1;
+  setCheckpoint(position, lookAt) {
+    this._checkpoint.position.copy(position)
+    this._checkpoint.lookAt.copy(lookAt)
+  }
 
-    this.rotationVel = lerp(this.rotationVel, turnInput * turnSpeed, delta * 5);
-    this.rotationY += this.rotationVel * delta;
-    this.mesh.rotation.y = this.rotationY;
+  /** Places the ship at `position` facing `lookAt`, at rest. */
+  teleport(position, lookAt) {
+    this.position.copy(position)
+    _m.lookAt(lookAt, position, _up.set(0, 1, 0))
+    this.quaternion.setFromRotationMatrix(_m)
+    this.velocity.set(0, 0, 0)
+    this._yawVel = 0
+    this._pitchVel = 0
+    this._horizonArmed = true
+    this.camera.snapTo?.(this)
+  }
 
-    // Bank (tilt on turns)
-    this.mesh.rotation.z = -this.rotationVel * 0.25;
+  spawnAt(position, lookAt) {
+    this.setCheckpoint(position, lookAt)
+    this.teleport(position, lookAt)
+  }
 
-    // Forward/back movement
-    let thrust = 0;
-    if (this.keys["KeyW"] || this.keys["ArrowUp"]) thrust = 1;
-    if (this.keys["KeyS"] || this.keys["ArrowDown"]) thrust = -0.4;
+  respawn() {
+    this.teleport(this._checkpoint.position, this._checkpoint.lookAt)
+    this.hull = HULL_MAX
+    this.reserve.reset()
+    this.destroyed = false
+    this._sinceDamage = 10
+  }
 
-    this._forward.set(Math.sin(this.rotationY), 0, Math.cos(this.rotationY));
-    const forward = this._forward;
+  damage(amount, source = 'impact') {
+    if (this.destroyed || this.locked) return
+    this.hull = Math.max(0, this.hull - amount)
+    this._sinceDamage = 0
+    this.events.trigger('damage', [amount, source])
+    if (this.hull <= 0) {
+      this.destroyed = true
+      this.locked = true
+      this.events.trigger('destroyed')
+    }
+  }
 
-    const targetVelX = forward.x * thrust * speed;
-    const targetVelZ = forward.z * thrust * speed;
+  _update(delta, elapsed) {
+    if (!this.locked) this._fly(delta)
+    else this.velocity.multiplyScalar(Math.pow(0.2, delta))
 
-    this.velocity.x = lerp(this.velocity.x, targetVelX, delta * 3);
-    this.velocity.z = lerp(this.velocity.z, targetVelZ, delta * 3);
+    this.position.addScaledVector(this.velocity, delta)
+    if (!this.locked) this._collide()
 
-    // Vertical
-    let vertInput = 0;
-    if (this.keys["KeyQ"] || this.keys["Space"]) vertInput = 1;
-    if (this.keys["KeyE"]) vertInput = -1;
-    this.velocity.y = lerp(this.velocity.y, vertInput * vertSpeed, delta * 4);
+    this.speedNorm = clamp(this.velocity.length() / BOOST_SPEED, 0, 1)
+    this._sinceDamage += delta
+    this._sinceHit += delta
+    if (this._sinceDamage > 3 && !this.destroyed) this.hull = Math.min(HULL_MAX, this.hull + 5 * delta)
 
-    // Apply velocity
-    this.mesh.position.x += this.velocity.x * delta;
-    this.mesh.position.y += this.velocity.y * delta;
-    this.mesh.position.z += this.velocity.z * delta;
+    const targetBank = -this._yawVel * 0.55
+    this._bank = lerp(this._bank, targetBank, 1 - Math.pow(0.001, delta))
+    this.model.rotation.z = this._bank
+    this.model.rotation.x = lerp(this.model.rotation.x, -this._pitchVel * 0.12, 1 - Math.pow(0.001, delta))
 
-    // Nose pitch when moving vertically
-    this.mesh.rotation.x = lerp(
-      this.mesh.rotation.x,
-      this.velocity.y * 0.04,
-      delta * 6,
-    );
+    const pulse = 0.85 + Math.sin(elapsed * 14) * 0.15
+    this.engineLight.intensity = (3 + this.speedNorm * 12 + this.boostAmount * 20) * pulse
+    this.trail.update(delta, this.speedNorm, this.boostAmount)
+  }
 
-    // Engine pulse
-    const t = Date.now() * 0.003;
-    const speed2 = this.velocity.length();
-    this.engineLight.intensity = 1.0 + Math.sin(t * 5) * 0.3;
+  _fly(delta) {
+    const input = this.input
+    const smooth = 1 - Math.pow(0.0025, delta)
+    this._yawVel = lerp(this._yawVel, input.yaw * YAW_RATE, smooth)
+    this._pitchVel = lerp(this._pitchVel, input.pitch * PITCH_RATE, smooth)
 
-    // Engine trail
-    this.boost = this.keys["ShiftLeft"] || this.keys["ShiftRight"];
-    const normalizedSpeed = clamp(speed2 / 28, 0, 1);
-    this.trail.update(delta, normalizedSpeed, this.boost, this.velocity);
+    _q.setFromAxisAngle(_up.set(0, 1, 0), this._yawVel * delta)
+    this.quaternion.multiply(_q)
+    _q.setFromAxisAngle(_right.set(1, 0, 0), -this._pitchVel * delta)
+    this.quaternion.multiply(_q)
+
+    // Gentle auto-level so long yaw+pitch combos never leave the player flying upside down.
+    this.getRight(_right)
+    const rollError = _right.y
+    if (Math.abs(rollError) > 0.001) {
+      _q.setFromAxisAngle(_fwd.set(0, 0, 1), -rollError * 1.4 * delta)
+      this.quaternion.multiply(_q)
+    }
+    this.quaternion.normalize()
+
+    const { boosting, denied } = this.reserve.update(delta, input.boost && input.thrust >= 0)
+    if (denied) this.events.trigger('boost-denied')
+    this.boostAmount = lerp(this.boostAmount, boosting ? 1 : 0, 1 - Math.pow(0.006, delta))
+
+    const thrust = boosting ? 1 : input.thrust
+    const maxSpeed = lerp(CRUISE_SPEED, BOOST_SPEED, this.boostAmount)
+    this.getForward(_fwd)
+    _target.copy(_fwd).multiplyScalar(thrust * maxSpeed)
+    this.velocity.lerp(_target, 1 - Math.pow(0.07, delta))
+
+    if (this._world) {
+      const bh = this._world.blackHole
+      bh.gravityAt(this.position, _gravity)
+      this.pull = _gravity.length()
+      this.velocity.addScaledVector(_gravity, delta)
+
+      this.heat = bh.heatAt(this.position)
+      if (this.heat > 0) this.damage(this.heat * 16 * delta, 'heat')
+
+      const dist = bh.distanceTo(this.position)
+      if (dist < bh.rs * 1.08 && this._horizonArmed) {
+        this._horizonArmed = false
+        this.events.trigger('horizon')
+      } else if (dist > bh.rs * 3) {
+        this._horizonArmed = true
+      }
+
+      const outside = dist > this._world.bounds
+      if (outside) {
+        _c.copy(bh.position).sub(this.position).normalize()
+        this.velocity.addScaledVector(_c, 26 * delta)
+      }
+      if (outside !== this.outOfBounds) {
+        this.outOfBounds = outside
+        this.events.trigger('bounds', [outside])
+      }
+    }
+  }
+
+  _collide() {
+    if (!this._world) return
+    for (const collider of this._world.colliders) {
+      collider.getPosition(_c)
+      const dist = _c.distanceTo(this.position)
+      const limit = collider.radius + SHIP_RADIUS
+      if (dist < limit) {
+        _n.copy(this.position).sub(_c).normalize()
+        this.position.copy(_c).addScaledVector(_n, limit + 0.05)
+        const into = -this.velocity.dot(_n)
+        if (into > 0) {
+          this.velocity.addScaledVector(_n, into * 1.35)
+          this.events.trigger('collide', [into, collider.name])
+          if (into > 14) this.damage(Math.min(20, (into - 10) * 0.8), collider.name)
+        }
+      }
+    }
+
+    const belt = this._world.asteroids
+    if (belt && belt.collide(this.position, SHIP_RADIUS, _hit)) {
+      this.position.addScaledVector(_hit.normal, _hit.depth + 0.1)
+      const into = -this.velocity.dot(_hit.normal)
+      if (into > 0) {
+        this.velocity.addScaledVector(_hit.normal, into * 1.5)
+        this.events.trigger('collide', [into, 'debris'])
+        if (this._sinceHit > HIT_GRACE_SECONDS) {
+          this._sinceHit = 0
+          this.damage(Math.min(DEBRIS_HIT_MAX, 6 + into * 0.4), 'debris')
+        }
+      }
+    }
   }
 }

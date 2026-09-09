@@ -1,128 +1,102 @@
 import * as THREE from 'three'
+import { SHIP_LAYER } from '../Renderer.js'
 import { lerp, randFloat } from '../utils/maths.js'
 
-const PARTICLE_COUNT = 300
+const PARTICLE_COUNT = 420
 
 const vertexShader = /* glsl */`
   attribute float aOpacity;
+  attribute float aHeat;
   varying float vOpacity;
-
+  varying float vHeat;
   void main() {
     vOpacity = aOpacity;
+    vHeat = aHeat;
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     gl_Position = projectionMatrix * mvPosition;
-    gl_PointSize = aOpacity * 1.2 * (200.0 / -mvPosition.z);
+    gl_PointSize = (0.5 + aOpacity * 1.0 + aHeat * 0.8) * (130.0 / max(-mvPosition.z, 1.0));
   }
 `
 
 const fragmentShader = /* glsl */`
   varying float vOpacity;
-
+  varying float vHeat;
   void main() {
     float d = length(gl_PointCoord - 0.5);
     if (d > 0.5) discard;
-    float alpha = (1.0 - d * 2.0) * vOpacity * 0.22;
-    gl_FragColor = vec4(0.0, 0.55, 0.8, alpha);
+    float alpha = (1.0 - d * 2.0) * vOpacity * 0.11;
+    vec3 cool = vec3(0.35, 0.75, 1.0);
+    vec3 hot = vec3(1.0, 0.92, 0.8);
+    gl_FragColor = vec4(mix(cool, hot, vHeat) * (0.7 + 0.3 * vHeat), alpha);
   }
 `
 
+/** Exhaust particles behind both engines. Runs hotter and denser while boosting. */
 export default class EngineTrail {
-  constructor(scene, shipMesh) {
+  constructor(scene, shipGroup) {
     this.scene = scene
-    this.shipMesh = shipMesh
+    this.shipGroup = shipGroup
 
     this.positions = new Float32Array(PARTICLE_COUNT * 3)
     this.opacities = new Float32Array(PARTICLE_COUNT)
+    this.heat = new Float32Array(PARTICLE_COUNT)
     this.lifetimes = new Float32Array(PARTICLE_COUNT)
-    this.maxLifetimes = new Float32Array(PARTICLE_COUNT)
     this.velocities = new Float32Array(PARTICLE_COUNT * 3)
+    for (let i = 0; i < PARTICLE_COUNT; i++) this.lifetimes[i] = -1
 
-    // All particles start dead
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      this.lifetimes[i] = -1
-      this.opacities[i] = 0
-    }
-
-    const geo = new THREE.BufferGeometry()
-    geo.setAttribute('position', new THREE.BufferAttribute(this.positions, 3))
-    geo.setAttribute('aOpacity', new THREE.BufferAttribute(this.opacities, 1))
-
-    const mat = new THREE.ShaderMaterial({
-      vertexShader,
-      fragmentShader,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
+    const geometry = new THREE.BufferGeometry()
+    geometry.setAttribute('position', new THREE.BufferAttribute(this.positions, 3))
+    geometry.setAttribute('aOpacity', new THREE.BufferAttribute(this.opacities, 1))
+    geometry.setAttribute('aHeat', new THREE.BufferAttribute(this.heat, 1))
+    const material = new THREE.ShaderMaterial({
+      vertexShader, fragmentShader,
+      transparent: true, blending: THREE.AdditiveBlending, depthWrite: false,
     })
-
-    this.points = new THREE.Points(geo, mat)
+    this.points = new THREE.Points(geometry, material)
     this.points.frustumCulled = false
+    this.points.layers.set(SHIP_LAYER)
     this.scene.add(this.points)
 
     this._slot = 0
-    this._engineOffsets = [
-      new THREE.Vector3(-0.8, 0, 1.0), // left wing
-      new THREE.Vector3(0.8, 0, 1.0),  // right wing
-    ]
+    this._engineOffsets = [new THREE.Vector3(-1.0, -0.05, -2.3), new THREE.Vector3(1.0, -0.05, -2.3)]
+    this._world = new THREE.Vector3()
+    this._back = new THREE.Vector3()
   }
 
-  update(delta, normalizedSpeed, boost) {
-    const isIdle = normalizedSpeed < 0.05
-    const spawnPerEngine = 1 + Math.floor(lerp(0, boost ? 2 : 1, normalizedSpeed))
+  update(delta, speedNorm, boost) {
+    const idle = speedNorm < 0.04
+    const perEngine = idle ? 1 : 1 + Math.floor(lerp(0, 2, Math.max(speedNorm, boost)))
+    this._back.set(0, 0, -1).applyQuaternion(this.shipGroup.quaternion)
 
-    // Spawn new particles
     for (const offset of this._engineOffsets) {
-      for (let s = 0; s < spawnPerEngine; s++) {
-        const slot = this._slot % PARTICLE_COUNT
-        this._slot++
-
-        // World position of engine exit
-        const worldPos = offset.clone().applyMatrix4(this.shipMesh.matrixWorld)
-
-        this.positions[slot * 3]     = worldPos.x + (Math.random() - 0.5) * 0.1
-        this.positions[slot * 3 + 1] = worldPos.y + (Math.random() - 0.5) * 0.1
-        this.positions[slot * 3 + 2] = worldPos.z + (Math.random() - 0.5) * 0.1
-
-        // Drift velocity — mostly backward along world -Z of ship
-        const spread = 0.3
-        this.velocities[slot * 3]     = (Math.random() - 0.5) * spread
-        this.velocities[slot * 3 + 1] = (Math.random() - 0.5) * spread * 0.5
-        this.velocities[slot * 3 + 2] = (Math.random() - 0.5) * spread
-
-        const maxLife = isIdle
-          ? randFloat(0.35, 0.6)
-          : randFloat(boost ? 0.1 : 0.18, boost ? 0.22 : 0.4)
-
-        this.maxLifetimes[slot] = maxLife
-        this.lifetimes[slot] = maxLife
-        this.opacities[slot] = isIdle ? 0.18 : (boost ? 0.7 : 0.4)
+      this._world.copy(offset).applyMatrix4(this.shipGroup.matrixWorld)
+      for (let s = 0; s < perEngine; s++) {
+        const i = this._slot++ % PARTICLE_COUNT
+        this.positions[i * 3] = this._world.x + (Math.random() - 0.5) * 0.15
+        this.positions[i * 3 + 1] = this._world.y + (Math.random() - 0.5) * 0.15
+        this.positions[i * 3 + 2] = this._world.z + (Math.random() - 0.5) * 0.15
+        const kick = 3 + boost * 6
+        this.velocities[i * 3] = this._back.x * kick + (Math.random() - 0.5) * 0.6
+        this.velocities[i * 3 + 1] = this._back.y * kick + (Math.random() - 0.5) * 0.6
+        this.velocities[i * 3 + 2] = this._back.z * kick + (Math.random() - 0.5) * 0.6
+        this.lifetimes[i] = idle ? randFloat(0.3, 0.5) : randFloat(0.25, 0.5 + boost * 0.3)
+        this.opacities[i] = idle ? 0.1 : 0.3 + boost * 0.4
+        this.heat[i] = boost
       }
     }
 
-    // Age all particles
     for (let i = 0; i < PARTICLE_COUNT; i++) {
-      if (this.lifetimes[i] <= 0) {
-        this.opacities[i] = 0
-        continue
-      }
+      if (this.lifetimes[i] <= 0) { this.opacities[i] = 0; continue }
       this.lifetimes[i] -= delta
-      const t = Math.max(0, this.lifetimes[i] / this.maxLifetimes[i])
-      this.opacities[i] *= (1 - delta * 2.5) // fade out
-      if (this.opacities[i] < 0.01) this.opacities[i] = 0
-
-      // Drift
-      this.positions[i * 3]     += this.velocities[i * 3]     * delta
+      this.opacities[i] *= 1 - delta * 2.4
+      this.positions[i * 3] += this.velocities[i * 3] * delta
       this.positions[i * 3 + 1] += this.velocities[i * 3 + 1] * delta
       this.positions[i * 3 + 2] += this.velocities[i * 3 + 2] * delta
     }
 
-    this.points.geometry.attributes.position.needsUpdate = true
-    this.points.geometry.attributes.aOpacity.needsUpdate = true
-  }
-
-  dispose() {
-    this.scene.remove(this.points)
-    this.points.geometry.dispose()
-    this.points.material.dispose()
+    const attrs = this.points.geometry.attributes
+    attrs.position.needsUpdate = true
+    attrs.aOpacity.needsUpdate = true
+    attrs.aHeat.needsUpdate = true
   }
 }
