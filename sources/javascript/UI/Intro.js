@@ -1,4 +1,5 @@
 import Experience from '../Experience.js'
+import VolumeControl from './VolumeControl.js'
 
 /** The title screen. Launches the run or drops straight into the CV for people in a hurry. */
 export default class Intro {
@@ -9,6 +10,7 @@ export default class Intro {
     this._best = document.getElementById('title-best')
     this._launched = false
 
+    this.volume = new VolumeControl(document.getElementById('title-volume'), exp.audio, { compact: true })
     const best = exp.game.run.best
     if (best) this._best.textContent = `BEST RUN · ${formatShipTime(best.shipTime)} · ${best.fragments} FRAGMENTS · ${best.score.toLocaleString()} PTS`
 

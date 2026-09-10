@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import Experience from '../Experience.js'
 import Radar from './Radar.js'
+import VolumeControl from './VolumeControl.js'
 import { formatShipTime, formatEarthTime } from './Intro.js'
 
 const _pos = new THREE.Vector3()
@@ -27,7 +28,7 @@ export default class HUD {
       mission: $('mission-list'), frags: $('frag-count'), score: $('score'), horizonStatus: $('horizon-status'),
       scanRing: $('scan-ring'), scanLabel: $('scan-label'),
       marker: $('marker'), markerName: $('marker-name'), markerDist: $('marker-dist'), markerArrow: document.querySelector('.marker-arrow'),
-      alerts: $('alerts'), sound: $('btn-sound'),
+      alerts: $('alerts'), sound: $('btn-sound'), soundPanel: $('sound-panel'),
       race: $('race-hud'), raceName: $('race-name'), raceTime: $('race-time'), raceGate: $('race-gate'), raceBest: $('race-best'),
       countdown: $('countdown'), scorePop: $('score-pop'),
     }
@@ -68,11 +69,15 @@ export default class HUD {
     })
     document.getElementById('btn-cv-menu').addEventListener('click', () => nav.classList.toggle('open'))
     if (!document.fullscreenEnabled) document.getElementById('btn-fullscreen').classList.add('hidden')
+    this.volume = new VolumeControl(document.getElementById('sound-panel-body'), this.audio)
     this.el.sound.addEventListener('click', () => {
       this.audio.unlock()
-      this.audio.toggleMute()
-      this._syncSoundButton()
+      this.el.soundPanel.classList.toggle('open')
     })
+    document.addEventListener('pointerdown', (e) => {
+      if (!e.target.closest('#sound-panel, #btn-sound')) this.el.soundPanel.classList.remove('open')
+    })
+    this.audio.events.on('volume', () => this._syncSoundButton())
     document.getElementById('btn-fullscreen').addEventListener('click', () => {
       if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {})
       else document.exitFullscreen?.().catch(() => {})
@@ -82,8 +87,6 @@ export default class HUD {
 
   _syncSoundButton() {
     this.el.sound.classList.toggle('muted', this.audio.muted)
-    const pauseBtn = document.getElementById('btn-pause-sound')
-    if (pauseBtn) pauseBtn.textContent = this.audio.muted ? '[ SOUND: OFF ]' : '[ SOUND: ON ]'
   }
 
   _wireEvents() {
@@ -157,7 +160,9 @@ export default class HUD {
     g.on('range-abort', () => this._hideRace())
     g.on('range-closed', () => this._hideRace())
 
-    this._exp.input.onKey('KeyM', () => { this.audio.unlock(); this.audio.toggleMute(); this._syncSoundButton() })
+    this._exp.input.onKey('KeyM', () => { this.audio.unlock(); this.audio.toggleMute() })
+    this._exp.input.onKey('BracketLeft', () => this.alert(`VOLUME ${Math.round(this.audio.nudgeMaster(-0.1) * 100)}%`, 'info', 1.2))
+    this._exp.input.onKey('BracketRight', () => this.alert(`VOLUME ${Math.round(this.audio.nudgeMaster(0.1) * 100)}%`, 'info', 1.2))
     this._exp.input.onKey('KeyG', () => document.getElementById('btn-fullscreen').click())
   }
 

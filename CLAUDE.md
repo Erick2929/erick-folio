@@ -91,6 +91,7 @@ tests/                           # physics + GameState behaviour tests (node --t
 | F / left click | Fire the blaster (touch: hold FIRE; a quick tap pulses instead) |
 | R | Scanner pulse (lights up nearby fragments) |
 | H | Photo mode (hides the HUD) |
+| [ / ] | Master volume down / up (also sliders on the title screen, the ♪ button, and the pause menu) |
 | Esc / P | Pause menu: restart, start time trial or target range, abort, sound, achievements · M mute · G fullscreen · Enter launch/continue |
 | Mouse drag | Steer (trackpad friendly) |
 | Touch | Drag left half to steer · THRUST / BOOST / BRAKE hold · PULSE tap · CRUISE toggle |
@@ -128,7 +129,9 @@ tests/                           # physics + GameState behaviour tests (node --t
 ## Tuning Knobs
 - Flight feel: constants at the top of `World/Ship.js` (speeds, yaw/pitch rates); boost seconds,
   recharge and relock threshold in the `BoostReserve` constructed there.
-- Audio levels: `AudioEngine.setFlight` (engine hum sits at ~10% of its original level).
+- Audio levels: `AudioEngine.setFlight` (engine hum sits at ~10% of its original level). User
+  volumes (master / music / effects, default master 55%) are pure math in `Audio/mix.js`,
+  persisted under `event-horizon:volume`, and rendered by `UI/VolumeControl.js`.
 - Gravity: `BlackHole.gravity` (`mu`, `cap`) and `LAYOUT.blackHole.rs`.
 - Look: bloom in `Renderer._setupPostProcessing`, disk intensity in `BlackHole._createDisk`,
   photon ring in `Render/shaders.js`, exposure in `Renderer._setup`.

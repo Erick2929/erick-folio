@@ -46,6 +46,7 @@
           <button id="btn-launch" class="btn btn-primary">[ LAUNCH ]</button>
           <button id="btn-cv" class="btn">[ SKIP TO THE CV ]</button>
         </div>
+        <div id="title-volume" class="title-volume"></div>
         <div id="title-best" class="title-best"></div>
       </div>
 
@@ -66,6 +67,7 @@
         <div class="ctl"><span class="keys"><kbd>F</kbd></span><span>fire · click also fires</span></div>
         <div class="ctl"><span class="keys"><kbd>R</kbd></span><span>scanner pulse</span></div>
         <div class="ctl"><span class="keys"><kbd>H</kbd></span><span>photo mode</span></div>
+        <div class="ctl"><span class="keys"><kbd>[</kbd><kbd>]</kbd></span><span>volume · M mutes</span></div>
         <div class="ctl"><span class="keys"><kbd>ESC</kbd></span><span>pause · achievements</span></div>
         <div class="ctl-note">Mouse drag also steers · Fuel cells refill boost · Best with sound on</div>
         </div>
@@ -148,6 +150,12 @@
 
     <div id="rotate-hint">ROTATE FOR THE BEST VIEW</div>
 
+    <div id="sound-panel" class="sound-panel">
+      <div class="hud-block-title">SOUND</div>
+      <div id="sound-panel-body"></div>
+      <div class="sound-hint">[ and ] adjust · M mutes</div>
+    </div>
+
     <div id="hud-corner">
       <button id="btn-sound" class="icon-btn" title="Sound">♪</button>
       <button id="btn-fullscreen" class="icon-btn" title="Fullscreen">⛶</button>
@@ -201,8 +209,8 @@
         <button id="btn-race-trial" class="btn">[ START TIME TRIAL ]</button>
         <button id="btn-range" class="btn">[ TARGET RANGE ]</button>
         <button id="btn-abort-race" class="btn hidden">[ ABORT RACE ]</button>
-        <button id="btn-pause-sound" class="btn">[ SOUND: ON ]</button>
       </div>
+      <div id="pause-volume" class="pause-volume"></div>
       <div id="pause-best" class="pause-best"></div>
       <p class="pause-touch">Drag on the left half to steer. Hold THRUST or switch CRUISE on to fly, hold BOOST for speed, BRAKE to slow down near a world. Hold FIRE to shoot, tap it to pulse for fragments.</p>
       <div class="pause-controls keyboard">
@@ -214,6 +222,7 @@
         <div><kbd>R</kbd> scanner pulse</div>
         <div><kbd>H</kbd> photo mode</div>
         <div><kbd>G</kbd> fullscreen</div>
+        <div><kbd>[</kbd><kbd>]</kbd> volume · <kbd>M</kbd> mute</div>
       </div>
       <p class="pause-tip">Scan a world by holding position near it. Debris and the disk plasma damage the hull. Fuel cells refill the boost reserve and grant overdrive. Amber beacons start races, the red one starts the target range; the horizon only opens once every chapter is logged.</p>
       <div id="achievements-count" class="hud-block-title"></div>

@@ -5,18 +5,51 @@
  * short Web Audio graphs built on demand; the engine hum and boost roar are continuous voices
  * whose levels follow `setFlight()` every frame.
  */
+import Events from '../Events.js'
+import { mixLevels, clampVolume, stepVolume, DEFAULT_VOLUMES } from './mix.js'
+
 const STORAGE_KEY = 'event-horizon:muted'
+const VOLUME_KEY = 'event-horizon:volume'
+const MUSIC_BASE = 0.3
 
 export default class AudioEngine {
   constructor() {
     this.ctx = null
+    this.events = new Events()
     this.muted = readMuted()
+    this.volumes = readVolumes()
+    this._ducked = false
+    this._fade = 0
     this._music = new window.Audio('./audio/ambient.mp3')
     this._music.loop = true
     this._music.preload = 'auto'
     this._music.volume = 0
-    this._musicTarget = 0.32
-    this._alarmOn = false
+  }
+
+  /** Current output levels for the music element and the effects bus. */
+  get levels() {
+    return mixLevels({ ...this.volumes, muted: this.muted, ducked: this._ducked }, MUSIC_BASE)
+  }
+
+  /** Sets one of master / music / sfx (0..1), persists it and applies it immediately. */
+  setVolume(kind, value) {
+    if (!(kind in this.volumes)) return
+    this.volumes[kind] = clampVolume(value)
+    try { localStorage.setItem(VOLUME_KEY, JSON.stringify(this.volumes)) } catch { /* private mode */ }
+    this._apply()
+    this.events.trigger('volume', [this.volumes, this.muted])
+  }
+
+  /** Keyboard nudge of the master volume in tenths. Returns the new value. */
+  nudgeMaster(delta) {
+    this.setVolume('master', stepVolume(this.volumes.master, delta))
+    return this.volumes.master
+  }
+
+  _apply() {
+    const lv = this.levels
+    if (this.ctx) this.master.gain.setTargetAtTime(lv.sfx, this.ctx.currentTime, 0.05)
+    this._music.volume = lv.music * this._fade
   }
 
   get ready() { return this.ctx !== null }
@@ -31,7 +64,7 @@ export default class AudioEngine {
     if (!AC) return
     this.ctx = new AC()
     this.master = this.ctx.createGain()
-    this.master.gain.value = this.muted ? 0 : 1
+    this.master.gain.value = this.levels.sfx
     this.master.connect(this.ctx.destination)
     this._buildEngine()
     this._buildBoost()
@@ -42,8 +75,8 @@ export default class AudioEngine {
   toggleMute() {
     this.muted = !this.muted
     try { localStorage.setItem(STORAGE_KEY, this.muted ? '1' : '0') } catch { /* private mode */ }
-    if (this.master) this.master.gain.setTargetAtTime(this.muted ? 0 : 1, this.ctx.currentTime, 0.05)
-    this._music.volume = this.muted ? 0 : this._musicTarget
+    this._apply()
+    this.events.trigger('volume', [this.volumes, this.muted])
     return this.muted
   }
 
@@ -52,8 +85,9 @@ export default class AudioEngine {
       let step = 0
       const id = setInterval(() => {
         step++
-        this._music.volume = this.muted ? 0 : Math.min(this._musicTarget, (this._musicTarget * step) / 60)
-        if (step >= 60) clearInterval(id)
+        this._fade = Math.min(1, step / 50)
+        this._apply()
+        if (step >= 50) clearInterval(id)
       }, 60)
     }
     this._music.play().then(fade).catch(() => {
@@ -282,10 +316,25 @@ export default class AudioEngine {
   }
 
   duckMusic(on) {
-    this._music.volume = this.muted ? 0 : (on ? this._musicTarget * 0.35 : this._musicTarget)
+    this._ducked = on
+    this._apply()
   }
 }
 
 function readMuted() {
   try { return localStorage.getItem(STORAGE_KEY) === '1' } catch { return false }
+}
+
+function readVolumes() {
+  try {
+    const raw = localStorage.getItem(VOLUME_KEY)
+    const saved = raw ? JSON.parse(raw) : {}
+    return {
+      master: clampVolume(saved.master ?? DEFAULT_VOLUMES.master),
+      music: clampVolume(saved.music ?? DEFAULT_VOLUMES.music),
+      sfx: clampVolume(saved.sfx ?? DEFAULT_VOLUMES.sfx),
+    }
+  } catch {
+    return { ...DEFAULT_VOLUMES }
+  }
 }

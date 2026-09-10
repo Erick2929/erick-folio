@@ -1,5 +1,6 @@
 import Experience from '../Experience.js'
 import { formatRaceTime } from './HUD.js'
+import VolumeControl from './VolumeControl.js'
 
 /** Escape handling and the pause card: resume, restart, courses, sound, and the achievements list. */
 export default class PauseMenu {
@@ -13,11 +14,7 @@ export default class PauseMenu {
 
     $('btn-resume').addEventListener('click', () => this.close())
     $('btn-restart').addEventListener('click', () => { this.close(); this.game.restart() })
-    $('btn-pause-sound').addEventListener('click', () => {
-      exp.audio.unlock()
-      exp.audio.toggleMute()
-      exp.hud._syncSoundButton()
-    })
+    this.volume = new VolumeControl($('pause-volume'), exp.audio)
     $('btn-race-trial').addEventListener('click', () => { this.close(); this.game.startRace('trial') })
     $('btn-range').addEventListener('click', () => { this.close(); this.game.startRange() })
     $('btn-abort-race').addEventListener('click', () => { this.close(); this.game.abortActivity() })
