@@ -138,11 +138,16 @@ tests/                           # physics + GameState behaviour tests (node --t
 - Time dilation: `Game/physics.js` (`DILATION_CAP`).
 - World placement: `LAYOUT` in `data/profile.js` (polar coordinates around the singularity).
 
+## Icons
+`node scripts/make-icons.mjs` regenerates `static/favicon.svg`, `favicon-32.png`, `favicon.ico` and
+`apple-touch-icon.png` from a 16×16 pixel-art grid (black hole + "E S"). Edit the grid or palette in
+that script, never the files by hand.
+
 ## Deployment
 Static hosting. `npm run build` then deploy `dist/`. `og-image.png` is referenced but not yet created.
 
 ## Backlog
-- [ ] Add `static/og-image.png` for link previews
+- [ ] Add `static/og-image.png` for link previews (the icon script's grid could seed it)
 - [ ] Ghost replay of the best time-trial lap
 - [ ] Mobile: joystick tuning and a landscape prompt
 - [ ] Optional: settings for invert-pitch and reduced motion
