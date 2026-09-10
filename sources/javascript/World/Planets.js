@@ -69,14 +69,14 @@ export default class Planets {
 
     if (world.ring) group.add(planetRing(world.radius, world.palette.atmosphere))
 
-    const label = makeLabelSprite(world.name, { color: hexToCss(world.palette.atmosphere), width: 22, sub: world.data.period })
+    const label = makeLabelSprite(world.order ? `${world.order} · ${world.name}` : world.name, { color: hexToCss(world.palette.atmosphere), width: 22, sub: world.data.period })
     label.position.y = world.radius + 8
     group.add(label)
 
     const scannable = {
       id: world.id, name: world.name, kind: 'planet', objectiveId: world.objectiveId,
       scanRange: world.scanRange, radius: world.radius, data: world.data, required: world.required,
-      label: world.label, color: world.palette.atmosphere,
+      label: world.label, color: world.palette.atmosphere, order: world.order,
       getPosition: (out) => out.copy(position),
     }
     this.scannables.push(scannable)
@@ -94,7 +94,7 @@ export default class Planets {
       new THREE.MeshStandardMaterial({ map: texture, roughness: 1, emissive: new THREE.Color(moon.palette.emissive) })
     )
     mesh.add(atmosphere(moon.radius * 1.2, moon.palette.atmosphere, 3.5, 0.9))
-    const label = makeLabelSprite('INTERN', { color: hexToCss(moon.palette.atmosphere), width: 10 })
+    const label = makeLabelSprite(moon.order ? `${moon.order} · INTERN` : 'INTERN', { color: hexToCss(moon.palette.atmosphere), width: 12 })
     label.position.y = moon.radius + 3
     mesh.add(label)
     this.scene.add(mesh)
@@ -107,7 +107,7 @@ export default class Planets {
     this.scannables.push({
       id: moon.id, name: moon.name, kind: 'moon', objectiveId: moon.objectiveId,
       scanRange: moon.scanRange, radius: moon.radius, data: moon.data, required: moon.required,
-      label: moon.label, color: moon.palette.atmosphere, getPosition,
+      label: moon.label, color: moon.palette.atmosphere, order: moon.order, getPosition,
     })
     this.colliders.push({ getPosition, radius: moon.radius, name: moon.name, damage: false })
   }

@@ -23,7 +23,7 @@ export default class Station {
     this.scannable = {
       id: layout.id, name: layout.name, kind: 'station', objectiveId: layout.objectiveId,
       scanRange: layout.scanRange, radius: layout.radius, data: layout.data, required: layout.required,
-      label: layout.label, color: 0x8fd3ff, getPosition,
+      label: layout.label, color: 0x8fd3ff, order: layout.order, getPosition,
     }
     this.colliders = [{ getPosition, radius: 7.5, name: layout.name, damage: false }]
 
@@ -76,7 +76,7 @@ export default class Station {
     this.beacon.layers.enableAll()
     this.group.add(this.beacon)
 
-    const label = makeLabelSprite('TEC STATION', { color: '#8fd3ff', width: 24, sub: 'EDUCATION · 2020 — PRESENT' })
+    const label = makeLabelSprite(layout.order ? `${layout.order} · TEC STATION` : 'TEC STATION', { color: '#8fd3ff', width: 24, sub: 'EDUCATION · 2020 — PRESENT' })
     label.position.y = 24
     this.group.add(label)
   }

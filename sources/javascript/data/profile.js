@@ -179,24 +179,24 @@ export const LAYOUT = {
   blackHole: { rs: 16, diskInner: 26, diskOuter: 74, tilt: [0.3, 0, 0.12] },
   worlds: [
     {
-      id: 'salesforce', kind: 'planet', name: 'SALESFORCE', objectiveId: 'scan-salesforce',
+      id: 'salesforce', kind: 'planet', name: 'SALESFORCE', objectiveId: 'scan-salesforce', order: 5,
       position: polar(20, 118, 6), radius: 13, scanRange: 26,
       palette: { base: '#0b3b6e', bands: '#1f7fc4', atmosphere: 0x3fa9ff, emissive: 0x081a33 },
       data: EXPERIENCE[0], required: true, label: 'Scan SALESFORCE',
     },
     {
-      id: 'regrello', kind: 'planet', name: 'REGRELLO', objectiveId: 'scan-regrello',
+      id: 'regrello', kind: 'planet', name: 'REGRELLO', objectiveId: 'scan-regrello', order: 4,
       position: polar(130, 178, -8), radius: 11, scanRange: 24,
       palette: { base: '#3a0f4a', bands: '#8a3fb0', atmosphere: 0xc76bff, emissive: 0x1a0626 },
       data: EXPERIENCE[1], required: true, label: 'Scan REGRELLO',
     },
     {
-      id: 'softtek', kind: 'planet', name: 'SOFTTEK', objectiveId: 'scan-softtek',
+      id: 'softtek', kind: 'planet', name: 'SOFTTEK', objectiveId: 'scan-softtek', order: 3,
       position: polar(235, 240, 4), radius: 15, scanRange: 28, ring: true,
       palette: { base: '#0d3f3a', bands: '#1fa393', atmosphere: 0x3ff0d6, emissive: 0x06201c },
       data: EXPERIENCE[2], required: true, label: 'Scan SOFTTEK',
       moon: {
-        id: 'softtek-intern', kind: 'moon', name: 'SOFTTEK · INTERN', objectiveId: 'scan-softtek-intern',
+        id: 'softtek-intern', kind: 'moon', name: 'SOFTTEK · INTERN', objectiveId: 'scan-softtek-intern', order: 2,
         orbitRadius: 30, radius: 4.5, scanRange: 14, speed: 0.12,
         palette: { base: '#2b3a3a', bands: '#4f6b6b', atmosphere: 0x9fe8dc, emissive: 0x0a1414 },
         data: EXPERIENCE[3], required: true, label: 'Scan SOFTTEK moon',
@@ -208,14 +208,14 @@ export const LAYOUT = {
       },
     },
     {
-      id: 'independent', kind: 'planet', name: 'ORIGIN', objectiveId: 'scan-origin',
+      id: 'independent', kind: 'planet', name: 'ORIGIN', objectiveId: 'scan-origin', order: 1,
       position: polar(320, 315, -4), radius: 12, scanRange: 32, belt: { inner: 24, outer: 46, count: 150 },
       palette: { base: '#4a2a0f', bands: '#b0672a', atmosphere: 0xffa25c, emissive: 0x2a1204 },
       data: EXPERIENCE[4], required: true, label: 'Scan ORIGIN',
     },
   ],
   station: {
-    id: 'tec', kind: 'station', name: 'TEC STATION', objectiveId: 'dock-tec',
+    id: 'tec', kind: 'station', name: 'TEC STATION', objectiveId: 'dock-tec', order: 6,
     position: polar(80, 210, 78), radius: 14, scanRange: 30,
     data: EDUCATION, required: true, label: 'Dock at TEC STATION',
   },
@@ -277,11 +277,14 @@ export const LAYOUT = {
   ],
 }
 
-/** Objectives in the order the mission log lists them. */
+/**
+ * Objectives in the order the mission log lists them. Required ones tell the story and must be
+ * logged in this order (see GameState); the rest are free side content.
+ */
 export const OBJECTIVES = [
   { id: 'scan-origin', label: 'Scan ORIGIN', required: true },
+  { id: 'scan-softtek-intern', label: 'Scan the SOFTTEK moon · intern', required: true },
   { id: 'scan-softtek', label: 'Scan SOFTTEK', required: true },
-  { id: 'scan-softtek-intern', label: 'Scan the SOFTTEK moon', required: true },
   { id: 'scan-regrello', label: 'Scan REGRELLO', required: true },
   { id: 'scan-salesforce', label: 'Scan SALESFORCE', required: true },
   { id: 'dock-tec', label: 'Dock at TEC STATION', required: true },

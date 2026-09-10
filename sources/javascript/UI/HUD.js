@@ -47,10 +47,11 @@ export default class HUD {
 
   _buildMission() {
     this.el.mission.innerHTML = ''
+    let step = 0
     for (const o of this.game.run.objectives) {
       const li = document.createElement('li')
       li.dataset.id = o.id
-      li.textContent = o.label
+      li.textContent = o.required ? `${++step}. ${o.label}` : o.label
       if (!o.required) li.classList.add('optional')
       if (o.done) li.classList.add('done')
       this.el.mission.appendChild(li)
@@ -257,8 +258,14 @@ export default class HUD {
     if (scanner.target && !racing) {
       const verb = scanner.target.kind === 'station' ? 'DOCKING' : scanner.target.kind === 'race' ? 'ACCEPTING CHALLENGE' : 'SCANNING'
       this.el.scanLabel.textContent = `${verb} ${scanner.target.name} · ${Math.round(progress * 100)}%`
+      this.el.scanLabel.classList.remove('locked')
+    } else if (scanner.locked && !racing) {
+      const next = this.game.run.nextRequired
+      this.el.scanLabel.textContent = next ? `LOCKED · ${next.label.toUpperCase()} FIRST` : 'LOCKED'
+      this.el.scanLabel.classList.add('locked')
     } else {
       this.el.scanLabel.textContent = ''
+      this.el.scanLabel.classList.remove('locked')
     }
   }
 

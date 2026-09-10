@@ -124,6 +124,7 @@ body.touch .ctl-list.keyboard { display: none; }
 .scan-track { fill: none; stroke: rgba(236, 228, 211, 0.08); stroke-width: 2; }
 #scan-ring { fill: none; stroke: var(--cyan); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 213.6; stroke-dashoffset: 213.6; transform: rotate(-90deg); transform-origin: 50% 50%; filter: drop-shadow(0 0 6px var(--cyan)); transition: stroke-dashoffset 0.08s linear; }
 #scan-label { margin-top: 8px; font-size: 10px; letter-spacing: 2px; color: var(--cyan); white-space: nowrap; min-height: 14px; }
+#scan-label.locked { color: var(--warn); }
 
 #marker { position: absolute; top: 0; left: 0; width: 0; height: 0; transition: opacity 0.3s; }
 .marker-box { position: absolute; left: -22px; top: -22px; width: 44px; height: 44px; border: 1px solid var(--amber); transform: rotate(45deg); opacity: 0.9; box-shadow: 0 0 12px var(--amber-soft); }

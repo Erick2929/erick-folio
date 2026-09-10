@@ -203,3 +203,36 @@ test('restarting returns every objective and counter to zero', () => {
   assert.equal(g.shipTime, 0)
   assert.equal(g.horizonOpen, false)
 })
+
+test('required objectives must be logged in story order', () => {
+  const g = makeGame()
+  g.start()
+  let blocked = null
+  g.events.on('blocked', (objective, next) => { blocked = { tried: objective.id, next: next.id } })
+  assert.equal(g.nextRequired.id, 'scan-origin')
+  assert.equal(g.isObjectiveAvailable('scan-salesforce'), false)
+  assert.equal(g.completeObjective('scan-salesforce'), false)
+  assert.deepEqual(blocked, { tried: 'scan-salesforce', next: 'scan-origin' })
+  assert.equal(g.objectivesDone, 0)
+  assert.equal(g.completeObjective('scan-origin'), true)
+  assert.equal(g.nextRequired.id, 'scan-salesforce')
+  assert.equal(g.completeObjective('scan-salesforce'), true)
+  assert.equal(g.completeObjective('dock-tec'), true)
+  assert.equal(g.nextRequired, null)
+  assert.equal(g.horizonOpen, true)
+})
+
+test('optional objectives can be completed at any point in the story', () => {
+  const g = makeGame()
+  g.start()
+  assert.equal(g.isObjectiveAvailable('fragments'), true)
+  assert.equal(g.completeObjective('fragments'), true)
+  assert.equal(g.nextRequired.id, 'scan-origin')
+})
+
+test('a finished objective is no longer available', () => {
+  const g = makeGame()
+  g.start()
+  g.completeObjective('scan-origin')
+  assert.equal(g.isObjectiveAvailable('scan-origin'), false)
+})

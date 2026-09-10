@@ -14,6 +14,7 @@ import FuelCells from './FuelCells.js'
 import Targets from './Targets.js'
 import Blaster from './Blaster.js'
 import { buildBeacon, animateBeacon } from './Beacon.js'
+import NextMarker from './NextMarker.js'
 import { LAYOUT, HIDDEN_FRAGMENTS, EDUCATION } from '../data/profile.js'
 
 /** Assembles every object in the run and hands the ship what it needs to fly through them. */
@@ -53,6 +54,7 @@ export default class World {
 
     this.fragments = new Fragments({ groups: this._fragmentGroups(), hidden: this._hiddenFragments() })
     this.bursts = new Burst()
+    this.nextMarker = new NextMarker()
     this.targets.bursts = this.bursts
     this.blaster.bursts = this.bursts
 

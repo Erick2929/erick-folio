@@ -11,9 +11,11 @@ const TIME_BONUS_DECAY_PER_SECOND = 5
  * The rules of the run: objectives, fragments, clocks, score and persistence.
  *
  * Pure state machine (title → playing → finale → freeflight) with no rendering or DOM
- * concerns. Anything visual subscribes to `events`:
- *   'start', 'objective' (objective), 'horizon-open', 'fragment' (fragment, count),
- *   'wormhole', 'finale' (summary), 'reboot', 'pause', 'resume', 'freeflight'.
+ * concerns. Required objectives form a story and must be completed in list order; optional
+ * ones are free. Anything visual subscribes to `events`:
+ *   'start', 'objective' (objective), 'blocked' (objective, nextRequired), 'horizon-open',
+ *   'fragment' (fragment, count), 'wormhole', 'finale' (summary), 'reboot', 'pause', 'resume',
+ *   'freeflight'.
  */
 export default class GameState {
   static SAVE_KEY = 'event-horizon:best'
@@ -43,6 +45,19 @@ export default class GameState {
   }
 
   get objectivesDone() { return this._done.size }
+
+  /** The next chapter of the story, or null once every required objective is done. */
+  get nextRequired() {
+    return this._objectives.find(o => o.required && !this._done.has(o.id)) || null
+  }
+
+  /** Whether an objective can be completed now: optional ones always, required ones only in order. */
+  isObjectiveAvailable(id) {
+    const objective = this._objectives.find(o => o.id === id)
+    if (!objective || this._done.has(id)) return false
+    if (!objective.required) return true
+    return this.nextRequired?.id === id
+  }
   get fragments() { return this._collected.size }
   get collectedSkills() { return [...this._collected.values()].map(f => f.skill) }
   get running() { return (this.state === 'playing' || this.state === 'freeflight') && !this.paused }
@@ -91,10 +106,14 @@ export default class GameState {
 
   isObjectiveDone(id) { return this._done.has(id) }
 
-  /** Marks an objective complete. Returns false when it was already done or unknown. */
+  /** Marks an objective complete. Returns false when it was already done, unknown, or out of story order. */
   completeObjective(id) {
     const objective = this._objectives.find(o => o.id === id)
     if (!objective || this._done.has(id)) return false
+    if (!this.isObjectiveAvailable(id)) {
+      this.events.trigger('blocked', [{ ...objective, done: false }, this.nextRequired])
+      return false
+    }
     this._done.add(id)
     this.events.trigger('objective', [{ ...objective, done: true }])
     this._checkHorizon()

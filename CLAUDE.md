@@ -76,6 +76,10 @@ tests/                           # physics + GameState behaviour tests (node --t
   radius in units of screen height.
 - **Pure game logic.** `Game/physics.js` and `Game/GameState.js` never import three or touch the
   DOM so they run under `node --test`. Keep rules there; keep rendering out of them.
+- **The story is ordered.** Required objectives complete only in `OBJECTIVES` order
+  (`GameState.isObjectiveAvailable`); the scanner reports out-of-order chapters as `locked`, the
+  HUD says which one comes first, and `World/NextMarker.js` floats a numbered diamond above the
+  next chapter. Optional objectives (satellite, races, range, fragments) are always available.
 - **Overlays pause the run.** Panels, the log dialog and the pause menu call `game.setOverlay()`;
   the world keeps animating but clocks, input and hazards freeze.
 - **`main.js` is the entry.** Never put `new Experience()` back in `Experience.js`: with the

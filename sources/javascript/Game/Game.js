@@ -61,6 +61,7 @@ export default class Game {
     this._damageGlow = 0
     this._skimSeconds = 0
     this._wormholes = 0
+    this._lockedHintFor = null
 
     this._wireRun()
     this._wireShip()
@@ -78,7 +79,9 @@ export default class Game {
 
   _wireRun() {
     const forward = (name) => this.run.events.on(name, (...args) => this.events.trigger(name, args))
-    ;['start', 'objective', 'fragment', 'pause', 'resume', 'freeflight', 'reboot'].forEach(forward)
+    ;['start', 'objective', 'fragment', 'pause', 'resume', 'freeflight', 'reboot', 'blocked'].forEach(forward)
+    const syncMarker = () => this._syncNextMarker()
+    ;['start', 'objective', 'finale', 'freeflight'].forEach((name) => this.run.events.on(name, syncMarker))
 
     this.run.events.on('horizon-open', () => {
       this.audio.horizonOpen()
@@ -230,6 +233,18 @@ export default class Game {
     this.events.trigger('alert', [text, level, seconds])
   }
 
+  /** The scannable for the next chapter of the story, or null when the story is complete. */
+  get nextChapter() {
+    const next = this.run.nextRequired
+    if (!next) return null
+    return this.world.scannables.find(s => s.objectiveId === next.id) || null
+  }
+
+  _syncNextMarker() {
+    const show = this.run.state === 'playing' ? this.nextChapter : null
+    this.world.nextMarker.setTarget(show)
+  }
+
   /** Called by the title screen. `cvMode` skips the tutorial alerts for people who just want the CV. */
   launch({ cvMode = false } = {}) {
     this.cvMode = cvMode
@@ -267,6 +282,7 @@ export default class Game {
     if (!this.cvMode) {
       this.alert('MISSION · LOG EVERY CHAPTER OF THE CAREER, THEN CROSS THE HORIZON', 'info', 6)
       this.alert('FLY CLOSE TO ORIGIN AND HOLD POSITION TO SCAN IT', 'info', 6)
+      this.alert('THE STORY GOES IN ORDER · FOLLOW THE DIAMOND', 'info', 6)
       this.alert('THE AMBER BEACON AHEAD STARTS A TIME TRIAL', 'info', 6)
     }
   }
@@ -406,9 +422,10 @@ export default class Game {
       } else if (this.range.active) {
         this.range.update(delta)
       } else {
-        const { completed, ticked } = this.scanner.update(delta)
+        const { completed, ticked, locked } = this.scanner.update(delta)
         if (ticked) this.audio.scanTick()
         if (completed) this._onScanned(completed)
+        this._hintLocked(locked)
       }
       this._trackSkim(delta, dist, bh)
       if (run.earthTime >= 50 * YEAR) this.achievements.unlock('time-traveler')
@@ -471,6 +488,15 @@ export default class Game {
     this.events.trigger('scan', [scannable])
   }
 
+  /** One reminder per world when the player parks at a chapter that is not next in the story. */
+  _hintLocked(locked) {
+    if (!locked) { this._lockedHintFor = null; return }
+    if (this._lockedHintFor === locked.id) return
+    this._lockedHintFor = locked.id
+    const next = this.run.nextRequired
+    if (next) this.alert(`${locked.name} COMES LATER IN THE STORY · ${next.label.toUpperCase()} FIRST`, 'warn', 4)
+  }
+
   _updateWellWarnings(dist, bh) {
     const deep = dist < bh.rs * 4.5
     if (deep && !this._wellWarned && this.run.running) {
@@ -507,15 +533,17 @@ export default class Game {
       return
     }
 
-    let best = null
+    // The story leads: point at the next chapter until the horizon opens.
+    let best = this.nextChapter
     let bestDist = Infinity
-    for (const s of this.world.scannables) {
-      if (s.kind === 'race' || s.kind === 'range') continue
-      if (run.isObjectiveDone(s.objectiveId)) continue
-      s.getPosition(_pos)
-      const d = _pos.distanceTo(this.ship.position)
-      const weighted = s.required ? d : d * 1.6
-      if (weighted < bestDist) { bestDist = weighted; best = s }
+    if (!best) {
+      for (const s of this.world.scannables) {
+        if (s.kind === 'race' || s.kind === 'range') continue
+        if (run.isObjectiveDone(s.objectiveId)) continue
+        s.getPosition(_pos)
+        const d = _pos.distanceTo(this.ship.position)
+        if (d < bestDist) { bestDist = d; best = s }
+      }
     }
     if (!best && run.state === 'freeflight') {
       const remaining = this.world.fragments.remaining
