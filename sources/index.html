@@ -151,8 +151,6 @@
       <div id="hud-controls">W S THRUST · A D YAW · ↑ ↓ PITCH · SHIFT/SPACE BOOST · F FIRE · R PULSE · H PHOTO · ESC PAUSE</div>
     </div>
 
-    <div id="rotate-hint">ROTATE FOR THE BEST VIEW</div>
-
     <div id="sound-panel" class="sound-panel">
       <div class="hud-block-title">SOUND</div>
       <div id="sound-panel-body"></div>
@@ -212,6 +210,7 @@
         <button id="btn-race-trial" class="btn">[ START TIME TRIAL ]</button>
         <button id="btn-range" class="btn">[ TARGET RANGE ]</button>
         <button id="btn-abort-race" class="btn hidden">[ ABORT RACE ]</button>
+        <button id="btn-reload" class="btn">[ RELOAD ]</button>
       </div>
       <div id="pause-volume" class="pause-volume"></div>
       <div id="pause-best" class="pause-best"></div>
@@ -255,6 +254,16 @@
       </div>
     </div>
   </section>
+
+  <!-- PORTRAIT PROMPT (touch devices) -->
+  <div id="rotate-overlay" class="rotate-overlay hidden">
+    <div class="rotate-card">
+      <div class="rotate-phone"><div class="rotate-phone-screen"></div></div>
+      <h2>TURN YOUR PHONE SIDEWAYS</h2>
+      <p>Event Horizon is built for landscape. Rotate your device for the full view and the flight controls.</p>
+      <button id="rotate-continue" class="btn">[ CONTINUE IN PORTRAIT ]</button>
+    </div>
+  </div>
 
   <!-- TOUCH CONTROLS -->
   <div id="touch" class="hidden">

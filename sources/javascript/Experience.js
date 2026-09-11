@@ -16,6 +16,7 @@ import RaceResults from './UI/RaceResults.js'
 import Finale from './UI/Finale.js'
 import PauseMenu from './UI/PauseMenu.js'
 import TouchControls from './UI/TouchControls.js'
+import OrientationGuard from './UI/OrientationGuard.js'
 import Intro from './UI/Intro.js'
 
 /**
@@ -54,6 +55,7 @@ export default class Experience {
     this.finale = new Finale()
     this.pauseMenu = new PauseMenu()
     this.touch = new TouchControls()
+    this.orientation = new OrientationGuard()
     this.intro = new Intro()
 
     const spawn = this.world.spawnPoint()

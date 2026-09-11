@@ -47,7 +47,7 @@ export default class Renderer {
       antialias: false,
       powerPreference: 'high-performance',
     })
-    this.instance.setSize(this.sizes.width, this.sizes.height)
+    this.instance.setSize(this.sizes.width, this.sizes.height, false)
     this.instance.setPixelRatio(this.sizes.pixelRatio)
     this.instance.toneMapping = THREE.ACESFilmicToneMapping
     this.instance.toneMappingExposure = 0.95
@@ -75,7 +75,7 @@ export default class Renderer {
   }
 
   _resize() {
-    this.instance.setSize(this.sizes.width, this.sizes.height)
+    this.instance.setSize(this.sizes.width, this.sizes.height, false)
     this.instance.setPixelRatio(this.sizes.pixelRatio)
     this.composer.setSize(this.sizes.width, this.sizes.height)
     this.composer.setPixelRatio(this.sizes.pixelRatio)

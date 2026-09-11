@@ -18,6 +18,7 @@ export default class PauseMenu {
     $('btn-race-trial').addEventListener('click', () => { this.close(); this.game.startRace('trial') })
     $('btn-range').addEventListener('click', () => { this.close(); this.game.startRange() })
     $('btn-abort-race').addEventListener('click', () => { this.close(); this.game.abortActivity() })
+    $('btn-reload').addEventListener('click', () => window.location.reload())
     exp.input.onKey('Escape', () => this._onEscape())
     exp.input.onKey('KeyP', () => this.toggle())
   }

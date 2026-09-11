@@ -131,6 +131,13 @@ tests/                           # physics + GameState behaviour tests (node --t
 - The six CV buttons collapse into a `CV ▾` menu on touch; the mission list, clocks and role line
   hide on phones (`max-height: 520px` or `max-width: 600px`); a rotate hint shows in portrait.
 - Touch devices render at pixel ratio 1 (`Sizes.js`) because bloom and the lens pass dominate.
+- Portrait on a touch device shows `#rotate-overlay` ("turn your phone sideways") via
+  `UI/OrientationGuard.js`, which also pauses a running game until the device is rotated;
+  "continue in portrait" dismisses it for the session (`sessionStorage`).
+- Rotation robustness: the canvas is sized by CSS (`width/height: 100%`) and the renderer only
+  sets the drawing buffer (`setSize(w, h, false)`); `Sizes` re-measures after `resize`,
+  `orientationchange` and `visualViewport` resize with delays, plus a 500 ms watchdog, so a
+  rotated phone never needs a reload. The pause menu still offers `[ RELOAD ]` as a safety net.
 - iPhone Safari has no fullscreen API, so the ⛶ button hides itself when unsupported.
 
 ## Tuning Knobs
