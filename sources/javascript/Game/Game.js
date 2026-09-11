@@ -6,6 +6,7 @@ import Scanner from './Scanner.js'
 import Race from './Race.js'
 import Range from './Range.js'
 import Achievements from './Achievements.js'
+import Tutorial from './Tutorial.js'
 import { timeDilation } from './physics.js'
 import { OBJECTIVES, LAYOUT } from '../data/profile.js'
 import { buzz } from '../utils/device.js'
@@ -27,7 +28,8 @@ const YEAR = 365.25 * 24 * 3600
  * 'race-go', 'race-gate' (index, total, elapsed), 'race-finish' (result), 'race-abort',
  * 'race-closed', 'fuel' (overdriveSeconds), 'achievement' (definition), 'photo' (on),
  * 'range-start', 'range-countdown' (n), 'range-go', 'range-hit' (points, combo, destroyed),
- * 'range-finish' (result), 'range-abort', 'range-closed'.
+ * 'range-finish' (result), 'range-abort', 'range-closed', 'tutorial-start', 'tutorial-step' (index),
+ * 'tutorial-complete', 'tutorial-skip'.
  */
 export default class Game {
   constructor() {
@@ -47,6 +49,7 @@ export default class Game {
     this.range = new Range({ storage, duration: LAYOUT.range.duration })
     this._activeResult = null
     this.achievements = new Achievements({ storage })
+    this.tutorial = new Tutorial({ storage })
     this.scanner = new Scanner(this.world.scannables, this.ship, this.run)
     this.currentTarget = null
     this.dilation = 1
@@ -67,6 +70,7 @@ export default class Game {
     this._wireShip()
     this._wireRace()
     this._wireRange()
+    this._wireTutorial()
     this.achievements.events.on('unlock', (def) => {
       this.audio.achievement()
       this.alert(`ACHIEVEMENT · ${def.name}`, 'good', 4)
@@ -229,6 +233,31 @@ export default class Game {
     })
   }
 
+  _wireTutorial() {
+    const t = this.tutorial
+    const stars = () => this.world.tutorialStars
+    t.events.on('start', () => { stars().show(0); this.events.trigger('tutorial-start') })
+    t.events.on('step', (index) => { stars().show(index); this.audio.pickup(index); this.events.trigger('tutorial-step', [index]) })
+    t.events.on('complete', () => {
+      stars().hideAll()
+      this.audio.scanComplete()
+      this.achievements.unlock('cadet')
+      this.alert('FLIGHT SCHOOL COMPLETE · NOW SCAN ORIGIN: FLY CLOSE AND HOLD POSITION', 'good', 6)
+      this.events.trigger('tutorial-complete')
+    })
+    t.events.on('skip', () => { stars().hideAll(); this.events.trigger('tutorial-skip') })
+  }
+
+  /** Flight school: three stars ahead of the spawn point. Auto-starts for first-time visitors. */
+  startTutorial() {
+    if (!this.run.running) return
+    this._exp.dialog?.close()
+    this.world.tutorialStars.place(this._spawn)
+    this.tutorial.start()
+  }
+
+  skipTutorial() { this.tutorial.skip() }
+
   alert(text, level = 'info', seconds = 3) {
     this.events.trigger('alert', [text, level, seconds])
   }
@@ -270,6 +299,7 @@ export default class Game {
     this._skimSeconds = 0
     this._wormholes = 0
     const spawn = this.world.spawnPoint()
+    this._spawn = spawn
     this.ship.spawnAt(spawn.position, spawn.lookAt)
     this.ship.hull = 100
     this.ship.reserve.reset()
@@ -279,7 +309,12 @@ export default class Game {
     this.input.enabled = true
     this.camera.setMode('chase')
     this.audio.duckMusic(false)
-    if (!this.cvMode) {
+    this.world.tutorialStars.hideAll()
+    if (this.tutorial.active) this.tutorial.skip()
+    if (!this.cvMode && !this.tutorial.seen) {
+      this.alert('WELCOME ABOARD · FLIGHT SCHOOL FIRST, THEN THE STORY', 'info', 5)
+      this.startTutorial()
+    } else if (!this.cvMode) {
       this.alert('MISSION · LOG EVERY CHAPTER OF THE CAREER, THEN CROSS THE HORIZON', 'info', 6)
       this.alert('FLY CLOSE TO ORIGIN AND HOLD POSITION TO SCAN IT', 'info', 6)
       this.alert('THE STORY GOES IN ORDER · FOLLOW THE DIAMOND', 'info', 6)
@@ -399,6 +434,13 @@ export default class Game {
       this.alert(fragment.hidden ? `HIDDEN FRAGMENT · ${fragment.skill.toUpperCase()}` : `FRAGMENT · ${fragment.skill.toUpperCase()}`, fragment.hidden ? 'good' : 'info', 2.2)
     }
 
+    if (this.tutorial.active && run.running) {
+      this.world.tutorialStars.positionOf(this.tutorial.index, _pos)
+      const reached = _pos.distanceTo(ship.position) < 7
+      if (reached) this.world.bursts.spawn(_pos, 0xffd27a, 40, 12)
+      this.tutorial.update(reached)
+    }
+
     const fuel = this.world.fuelCells.update(delta, ship.position, elapsed, run.running)
     for (const cell of fuel) {
       ship.refuel(15)
@@ -479,6 +521,7 @@ export default class Game {
       this.startRange()
       return
     }
+    scannable.reveal?.()
     this.run.completeObjective(scannable.objectiveId)
     this.achievements.unlock('first-light')
     this.ship.setCheckpoint(this.ship.position, scannable.getPosition(_tmp))
@@ -510,6 +553,12 @@ export default class Game {
   _updateTarget() {
     const run = this.run
     if (run.state === 'finale' || run.state === 'title') { this.currentTarget = null; return }
+
+    if (this.tutorial.active) {
+      const index = this.tutorial.index
+      this.currentTarget = { name: `STAR ${index + 1}/${this.tutorial.steps.length}`, kind: 'star', color: 0xffd27a, radius: 3, getPosition: (out) => this.world.tutorialStars.positionOf(index, out) }
+      return
+    }
 
     if (this.race.active && this.race.state !== 'finished') {
       const index = this.race.nextGate

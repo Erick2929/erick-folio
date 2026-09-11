@@ -76,6 +76,13 @@ tests/                           # physics + GameState behaviour tests (node --t
   radius in units of screen height.
 - **Pure game logic.** `Game/physics.js` and `Game/GameState.js` never import three or touch the
   DOM so they run under `node --test`. Keep rules there; keep rendering out of them.
+- **Flight school.** `Game/Tutorial.js` (pure, tested) runs three stars placed in the spawn frame
+  by `World/TutorialStars.js`; it auto-starts once per browser (`event-horizon:tutorial-done`),
+  can be skipped from its banner, and replays from the pause menu.
+- **Orbiters are shared.** `World/Orbiters.js` builds moons, satellites and trophies for both
+  `Planets.js` and `Station.js`; `planetVisuals.js` holds the textures and atmosphere shader.
+  Tec Station hosts the master's moon (chapter 6) and the HackMTY trophy (an Easter egg labelled
+  "?" until scanned; `scannable.reveal()`).
 - **The story is ordered.** Required objectives complete only in `OBJECTIVES` order
   (`GameState.isObjectiveAvailable`); the scanner reports out-of-order chapters as `locked`, the
   HUD says which one comes first, and `World/NextMarker.js` floats a numbered diamond above the
@@ -96,7 +103,7 @@ tests/                           # physics + GameState behaviour tests (node --t
 | R | Scanner pulse (lights up nearby fragments) |
 | H | Photo mode (hides the HUD) |
 | [ / ] | Master volume down / up (also sliders on the title screen, the ♪ button, and the pause menu) |
-| Esc / P | Pause menu: restart, start time trial or target range, abort, sound, achievements · M mute · G fullscreen · Enter launch/continue |
+| Esc / P | Pause menu: restart, flight school, start time trial or target range, abort, reload, sound, achievements · M mute · G fullscreen · Enter launch/continue |
 | Mouse drag | Steer (trackpad friendly) |
 | Touch | Drag left half to steer · THRUST / BOOST / BRAKE hold · PULSE tap · CRUISE toggle |
 

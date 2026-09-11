@@ -1,6 +1,7 @@
 import Events from '../Events.js'
 
 export const ACHIEVEMENTS = [
+  { id: 'cadet', name: 'CADET', hint: 'Complete flight school.' },
   { id: 'first-light', name: 'FIRST LIGHT', hint: 'Log your first chapter.' },
   { id: 'archivist', name: 'ARCHIVIST', hint: 'Log every chapter and open the horizon.' },
   { id: 'completionist', name: 'COMPLETIONIST', hint: 'Recover every skill fragment.' },

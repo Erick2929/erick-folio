@@ -483,3 +483,19 @@ body.touch .sound-hint { display: none; }
 }
 .rotate-phone-screen { width: 100%; height: 100%; background: linear-gradient(135deg, rgba(242, 165, 65, 0.35), rgba(143, 211, 255, 0.25)); border-radius: 4px; }
 @keyframes rotate-phone { 0%, 20% { transform: rotate(0deg); } 55%, 80% { transform: rotate(-90deg); } 100% { transform: rotate(0deg); } }
+
+/* ── flight school banner ────────────────────────────── */
+#tutorial {
+  position: absolute; top: 24px; left: 50%; transform: translateX(-50%); width: min(420px, 90vw);
+  padding: 12px 16px; background: rgba(3, 4, 7, 0.7); border: 1px solid var(--amber-soft); text-align: center; pointer-events: auto;
+}
+#tutorial.flash { animation: tut-in 0.5s ease; }
+@keyframes tut-in { from { opacity: 0; transform: translate(-50%, -8px); } to { opacity: 1; transform: translateX(-50%); } }
+.tut-head { display: flex; justify-content: space-between; align-items: center; font-size: 10px; letter-spacing: 3px; color: var(--amber); }
+.tut-skip { background: transparent; border: 1px solid var(--line); color: var(--ink-faint); font-family: var(--mono); font-size: 9px; letter-spacing: 2px; padding: 4px 10px; cursor: pointer; }
+.tut-skip:hover { color: var(--ink); border-color: var(--ink-dim); }
+#tut-keys { margin-top: 8px; font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: 2px; color: #fff; }
+#tut-text { margin-top: 4px; font-size: 11px; letter-spacing: 1px; color: var(--ink-dim); }
+body.touch #tutorial { top: calc(6px + env(safe-area-inset-top)); width: min(340px, 60vw); padding: 8px 12px; }
+body.touch #tut-keys { font-size: 14px; }
+body.touch #tut-text { font-size: 10px; }

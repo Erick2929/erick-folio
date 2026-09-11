@@ -1,10 +1,12 @@
 import * as THREE from 'three'
 import Experience from '../Experience.js'
 import { makeLabelSprite } from '../utils/labels.js'
+import { createMoon, createSatellite } from './Orbiters.js'
 
 /**
- * TEC STATION, the education chapter: a rotating ring station with a lit docking ring.
- * Docking uses the same proximity mechanic as scanning, so it exposes a scannable.
+ * TEC STATION, the university: a rotating ring station with a lit docking ring. Docking uses
+ * the same proximity mechanic as scanning. It can host orbiters too (the master's moon, the
+ * hackathon trophy), exposed through `scannables` and `colliders`.
  */
 export default class Station {
   constructor(layout) {
@@ -25,9 +27,19 @@ export default class Station {
       scanRange: layout.scanRange, radius: layout.radius, data: layout.data, required: layout.required,
       label: layout.label, color: 0x8fd3ff, order: layout.order, getPosition,
     }
+    this.scannables = [this.scannable]
     this.colliders = [{ getPosition, radius: 7.5, name: layout.name, damage: false }]
+    this._orbiters = []
+    if (layout.moon) this._adopt(createMoon(this.scene, { ...layout.moon, shortLabel: "MASTER'S" }, this.position))
+    for (const spec of layout.satellites || []) this._adopt(createSatellite(this.scene, spec, this.position))
 
     this.ticker.events.on('tick', (delta, elapsed) => this._update(delta, elapsed), 3)
+  }
+
+  _adopt(orbiter) {
+    this._orbiters.push(orbiter)
+    this.scannables.push(orbiter.scannable)
+    if (orbiter.collider) this.colliders.push(orbiter.collider)
   }
 
   _build(layout) {
@@ -76,7 +88,7 @@ export default class Station {
     this.beacon.layers.enableAll()
     this.group.add(this.beacon)
 
-    const label = makeLabelSprite(layout.order ? `${layout.order} · TEC STATION` : 'TEC STATION', { color: '#8fd3ff', width: 24, sub: 'EDUCATION · 2020 — PRESENT' })
+    const label = makeLabelSprite(layout.order ? `${layout.order} · TEC STATION` : 'TEC STATION', { color: '#8fd3ff', width: 24, sub: layout.data.period ? `EDUCATION · ${layout.data.period}` : 'EDUCATION' })
     label.position.y = 24
     this.group.add(label)
   }
@@ -86,5 +98,6 @@ export default class Station {
     const pulse = 0.55 + 0.45 * Math.sin(elapsed * 3)
     this.dock.material.color.setRGB(0.35 + 0.25 * pulse, 0.7 + 0.15 * pulse, 1.0)
     this.beacon.intensity = 90 + 90 * pulse
+    for (const o of this._orbiters) o.update(delta, elapsed)
   }
 }

@@ -107,20 +107,28 @@ export const EXPERIENCE = [
 
 export const EDUCATION = [
   {
-    id: 'tec-msc',
-    school: 'Tecnológico de Monterrey',
-    degree: 'M.S. in Artificial Intelligence',
-    period: 'In progress',
-    detail: 'Graduate studies in artificial intelligence alongside full-time engineering work.',
-    skills: ['Artificial Intelligence', 'Computer Science'],
-  },
-  {
     id: 'tec-bsc',
     school: 'Tecnológico de Monterrey · Campus Monterrey',
     degree: 'B.S. in Computer Science and Technology',
-    period: 'Graduated June 2024',
-    detail: 'GPA 4.0 / 4.0',
-    skills: [],
+    period: '2020 — Jun 2024',
+    summary: 'Graduated in June 2024 with a 4.0 GPA, studying while already working as a developer.',
+    highlights: [
+      'GPA 4.0 / 4.0.',
+      'Home of HackMTY, the hackathon I won in 2022. Look around the station.',
+    ],
+    skills: ['Computer Science'],
+  },
+  {
+    id: 'tec-msc',
+    school: 'Tecnológico de Monterrey',
+    degree: 'M.S. in Artificial Intelligence',
+    period: 'Late 2024 — May 2027 (expected)',
+    summary: "Started the master's at the same time as the Regrello job: studying artificial intelligence by night while shipping AI systems by day.",
+    highlights: [
+      'In progress, aiming to graduate in May 2027.',
+      'Runs in parallel with full-time engineering work.',
+    ],
+    skills: ['Artificial Intelligence'],
   },
 ]
 
@@ -202,19 +210,19 @@ export const LAYOUT = {
   blackHole: { rs: 16, diskInner: 26, diskOuter: 74, tilt: [0.3, 0, 0.12] },
   worlds: [
     {
-      id: 'salesforce', kind: 'planet', name: 'SALESFORCE', objectiveId: 'scan-salesforce', order: 5,
+      id: 'salesforce', kind: 'planet', name: 'SALESFORCE', objectiveId: 'scan-salesforce', order: 7,
       position: polar(20, 118, 6), radius: 13, scanRange: 26,
       palette: { base: '#0b3b6e', bands: '#1f7fc4', atmosphere: 0x3fa9ff, emissive: 0x081a33 },
       data: EXPERIENCE[0], required: true, label: 'Scan SALESFORCE',
     },
     {
-      id: 'regrello', kind: 'planet', name: 'REGRELLO', objectiveId: 'scan-regrello', order: 4,
+      id: 'regrello', kind: 'planet', name: 'REGRELLO', objectiveId: 'scan-regrello', order: 5,
       position: polar(130, 178, -8), radius: 11, scanRange: 24,
       palette: { base: '#3a0f4a', bands: '#8a3fb0', atmosphere: 0xc76bff, emissive: 0x1a0626 },
       data: EXPERIENCE[1], required: true, label: 'Scan REGRELLO',
     },
     {
-      id: 'softtek', kind: 'planet', name: 'SOFTTEK', objectiveId: 'scan-softtek', order: 3,
+      id: 'softtek', kind: 'planet', name: 'SOFTTEK', objectiveId: 'scan-softtek', order: 4,
       position: polar(235, 240, 4), radius: 15, scanRange: 28, ring: true,
       palette: { base: '#0d3f3a', bands: '#1fa393', atmosphere: 0x3ff0d6, emissive: 0x06201c },
       data: EXPERIENCE[2], required: true, label: 'Scan SOFTTEK',
@@ -235,17 +243,23 @@ export const LAYOUT = {
       position: polar(320, 315, -4), radius: 12, scanRange: 32, belt: { inner: 24, outer: 46, count: 150 },
       palette: { base: '#4a2a0f', bands: '#b0672a', atmosphere: 0xffa25c, emissive: 0x2a1204 },
       data: EXPERIENCE[4], required: true, label: 'Scan ORIGIN',
-      satellites: [{
-        id: 'hackmty', kind: 'trophy', name: 'HACKMTY TROPHY', objectiveId: 'scan-hackmty',
-        orbitRadius: 58, radius: 2.4, scanRange: 12, speed: 0.14, label: 'HACKMTY 2022', color: 0xffd700,
-        data: PROJECTS[0], required: false,
-      }],
     },
   ],
   station: {
-    id: 'tec', kind: 'station', name: 'TEC STATION', objectiveId: 'dock-tec', order: 6,
+    id: 'tec', kind: 'station', name: 'TEC STATION', objectiveId: 'dock-tec', order: 3,
     position: polar(80, 210, 78), radius: 14, scanRange: 30,
-    data: EDUCATION, required: true, label: 'Dock at TEC STATION',
+    data: EDUCATION[0], required: true, label: 'Dock at TEC STATION',
+    moon: {
+      id: 'tec-msc', kind: 'moon', name: "TEC · MASTER'S", objectiveId: 'scan-tec-msc', order: 6,
+      orbitRadius: 32, radius: 4, scanRange: 14, speed: 0.1, angle: 2.4, tilt: 0.5,
+      palette: { base: '#0f2a4a', bands: '#2f7fbf', atmosphere: 0x8fd3ff, emissive: 0x081a33 },
+      data: EDUCATION[1], required: true, label: "Scan the TEC moon · master's",
+    },
+    satellites: [{
+      id: 'hackmty', kind: 'trophy', name: 'HACKMTY TROPHY', objectiveId: 'scan-hackmty',
+      orbitRadius: 46, radius: 2.4, scanRange: 12, speed: 0.16, angle: 0.4, tilt: -0.35, label: '?', revealLabel: 'HACKMTY 2022', color: 0xffd700,
+      data: PROJECTS[0], required: false,
+    }],
   },
   spawn: { worldId: 'independent', offset: 48 },
   bounds: 560,
@@ -312,12 +326,13 @@ export const LAYOUT = {
 export const OBJECTIVES = [
   { id: 'scan-origin', label: 'Scan ORIGIN', required: true },
   { id: 'scan-softtek-intern', label: 'Scan the SOFTTEK moon · intern', required: true },
+  { id: 'dock-tec', label: 'Dock at TEC STATION · B.S. graduation', required: true },
   { id: 'scan-softtek', label: 'Scan SOFTTEK', required: true },
   { id: 'scan-regrello', label: 'Scan REGRELLO', required: true },
+  { id: 'scan-tec-msc', label: "Scan the TEC moon · master's", required: true },
   { id: 'scan-salesforce', label: 'Scan SALESFORCE', required: true },
-  { id: 'dock-tec', label: 'Dock at TEC STATION', required: true },
   { id: 'scan-matchpoint', label: 'Scan the MATCHPOINT satellite', required: false },
-  { id: 'scan-hackmty', label: 'Scan the HACKMTY trophy', required: false },
+  { id: 'scan-hackmty', label: 'Find the artifact orbiting TEC STATION', required: false },
   { id: 'race', label: 'Finish the time trial', required: false },
   { id: 'range', label: 'Post a target range score', required: false },
   { id: 'fragments', label: 'Recover every skill fragment', required: false },

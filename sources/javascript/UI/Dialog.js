@@ -29,30 +29,25 @@ export default class Dialog {
 
   show(scannable) {
     const el = this.el
-    const done = this.game.run.objectivesDone
-    const total = this.game.run.objectives.filter((o) => o.required).length
+    const required = this.game.run.objectives.filter((o) => o.required)
+    const done = required.filter((o) => o.done).length
+    const total = required.length
 
-    if (scannable.kind === 'station') {
-      const entries = scannable.data
-      el.tag.textContent = `// DOCKING COMPLETE · EDUCATION`
-      el.title.textContent = 'TECNOLÓGICO DE MONTERREY'
-      el.meta.innerHTML = entries.map((e) => `${esc(e.degree)} · ${esc(e.period)}`).join('<br>')
-      el.summary.textContent = entries[0].detail
-      el.highlights.innerHTML = entries.slice(1).map((e) => `<li>${esc(e.degree)} — ${esc(e.detail)}</li>`).join('')
-      el.skills.innerHTML = entries.flatMap((e) => e.skills).map((s) => `<span class="chip on">${esc(s)}</span>`).join('')
-      el.link.classList.add('hidden')
-    } else {
-      const d = scannable.data
-      const isProject = scannable.kind === 'satellite'
-      const isTrophy = scannable.kind === 'trophy'
-      el.tag.textContent = isTrophy ? `// ARTIFACT SCAN · HONORS` : isProject ? `// SATELLITE SCAN · SIDE PROJECT` : `// LOG ENTRY ${Math.min(done, total)}/${total} · SCAN COMPLETE`
-      el.title.textContent = (d.company || d.name || '').toUpperCase()
-      el.meta.innerHTML = `${esc(d.role)}<br>${esc(d.period)}${d.location ? ' · ' + esc(d.location) : ''}`
-      el.summary.textContent = d.summary
-      el.highlights.innerHTML = (d.highlights || []).map((h) => `<li>${esc(h)}</li>`).join('')
-      el.skills.innerHTML = (d.skills || []).map((s) => `<span class="chip">${esc(s)}</span>`).join('')
-      if (d.link) { el.link.href = d.link; el.link.textContent = d.linkLabel || 'VISIT →'; el.link.classList.remove('hidden') } else el.link.classList.add('hidden')
-    }
+    const d = scannable.data
+    const isEducation = !!d.school
+    const isProject = scannable.kind === 'satellite'
+    const isTrophy = scannable.kind === 'trophy'
+    el.tag.textContent = isTrophy ? '// ARTIFACT SCAN · HONORS'
+      : isProject ? '// SATELLITE SCAN · SIDE PROJECT'
+      : scannable.kind === 'station' ? `// DOCKING COMPLETE · LOG ENTRY ${Math.min(done, total)}/${total}`
+      : `// LOG ENTRY ${Math.min(done, total)}/${total} · SCAN COMPLETE`
+    el.title.textContent = (d.school || d.company || d.name || '').toUpperCase()
+    const role = isEducation ? d.degree : d.role
+    el.meta.innerHTML = `${esc(role)}<br>${esc(d.period)}${d.location ? ' · ' + esc(d.location) : ''}`
+    el.summary.textContent = d.summary
+    el.highlights.innerHTML = (d.highlights || []).map((h) => `<li>${esc(h)}</li>`).join('')
+    el.skills.innerHTML = (d.skills || []).map((s) => `<span class="chip">${esc(s)}</span>`).join('')
+    if (d.link) { el.link.href = d.link; el.link.textContent = d.linkLabel || 'VISIT →'; el.link.classList.remove('hidden') } else el.link.classList.add('hidden')
 
     el.root.classList.remove('hidden')
     if (!this._openFor) this.game.setOverlay(true)

@@ -93,9 +93,11 @@ export default class Panels {
 
     this._body('education').innerHTML = EDUCATION.map((e) => `
       <div class="entry" data-entry="${e.id}">
+        <span class="logged-tag hidden">LOGGED</span>
         <div class="entry-head"><span class="entry-title">${esc(e.school)}</span><span class="entry-period">${esc(e.period)}</span></div>
         <div class="entry-role">${esc(e.degree)}</div>
-        <p>${esc(e.detail)}</p>
+        <p>${esc(e.summary)}</p>
+        <ul>${(e.highlights || []).map((h) => `<li>${esc(h)}</li>`).join('')}</ul>
         ${e.skills.length ? `<div class="chips">${e.skills.map((s) => chip(s)).join('')}</div>` : ''}
       </div>
     `).join('')

@@ -31,6 +31,7 @@ export default class HUD {
       alerts: $('alerts'), sound: $('btn-sound'), soundPanel: $('sound-panel'),
       race: $('race-hud'), raceName: $('race-name'), raceTime: $('race-time'), raceGate: $('race-gate'), raceBest: $('race-best'),
       countdown: $('countdown'), scorePop: $('score-pop'),
+      tutorial: $('tutorial'), tutTitle: $('tut-title'), tutKeys: $('tut-keys'), tutText: $('tut-text'),
     }
     this.radar = new Radar($('radar'))
     this._frame = 0
@@ -161,10 +162,27 @@ export default class HUD {
     g.on('range-abort', () => this._hideRace())
     g.on('range-closed', () => this._hideRace())
 
+    g.on('tutorial-start', () => this._showTutorialStep(0))
+    g.on('tutorial-step', (index) => this._showTutorialStep(index))
+    g.on('tutorial-complete', () => this.el.tutorial.classList.add('hidden'))
+    g.on('tutorial-skip', () => this.el.tutorial.classList.add('hidden'))
+    document.getElementById('tut-skip').addEventListener('click', () => this.game.skipTutorial())
+
     this._exp.input.onKey('KeyM', () => { this.audio.unlock(); this.audio.toggleMute() })
     this._exp.input.onKey('BracketLeft', () => this.alert(`VOLUME ${Math.round(this.audio.nudgeMaster(-0.1) * 100)}%`, 'info', 1.2))
     this._exp.input.onKey('BracketRight', () => this.alert(`VOLUME ${Math.round(this.audio.nudgeMaster(0.1) * 100)}%`, 'info', 1.2))
     this._exp.input.onKey('KeyG', () => document.getElementById('btn-fullscreen').click())
+  }
+
+  _showTutorialStep(index) {
+    const step = this.game.tutorial.steps[index]
+    const touch = document.body.classList.contains('touch')
+    this.el.tutTitle.textContent = `FLIGHT SCHOOL ${index + 1}/${this.game.tutorial.steps.length}`
+    this.el.tutKeys.textContent = touch ? step.touch : step.keys
+    this.el.tutText.textContent = step.text
+    this.el.tutorial.classList.remove('hidden', 'flash')
+    void this.el.tutorial.offsetWidth
+    this.el.tutorial.classList.add('flash')
   }
 
   _showCountdown(text, ms = 900) {

@@ -15,7 +15,8 @@ import Targets from './Targets.js'
 import Blaster from './Blaster.js'
 import { buildBeacon, animateBeacon } from './Beacon.js'
 import NextMarker from './NextMarker.js'
-import { LAYOUT, HIDDEN_FRAGMENTS, EDUCATION } from '../data/profile.js'
+import TutorialStars from './TutorialStars.js'
+import { LAYOUT, HIDDEN_FRAGMENTS } from '../data/profile.js'
 
 /** Assembles every object in the run and hands the ship what it needs to fly through them. */
 export default class World {
@@ -49,12 +50,13 @@ export default class World {
     this.targets = new Targets()
     this.blaster = new Blaster(exp.ship)
 
-    this.scannables = [...this.planets.scannables, this.station.scannable, ...this.raceCourse.beacons, this.rangeScannable]
+    this.scannables = [...this.planets.scannables, ...this.station.scannables, ...this.raceCourse.beacons, this.rangeScannable]
     this.colliders = [...this.planets.colliders, ...this.station.colliders]
 
     this.fragments = new Fragments({ groups: this._fragmentGroups(), hidden: this._hiddenFragments() })
     this.bursts = new Burst()
     this.nextMarker = new NextMarker()
+    this.tutorialStars = new TutorialStars()
     this.targets.bursts = this.bursts
     this.blaster.bursts = this.bursts
 
@@ -91,9 +93,22 @@ export default class World {
         })
       })
     })
+    const station = LAYOUT.station
     groups.push({
-      worldId: LAYOUT.station.id, center: LAYOUT.station.position, radius: LAYOUT.station.radius + 12,
-      skills: EDUCATION.flatMap(e => e.skills), color: 0x8fd3ff, tilt: 0.1, phase: 1,
+      worldId: station.id, center: station.position, radius: station.radius + 12,
+      skills: station.data.skills, color: 0x8fd3ff, tilt: 0.1, phase: 1,
+    })
+    if (station.moon) {
+      groups.push({
+        worldId: station.moon.id, center: station.position, radius: station.radius + 20,
+        skills: station.moon.data.skills, color: station.moon.palette.atmosphere, tilt: -0.5, phase: 2,
+      })
+    }
+    ;(station.satellites || []).forEach((sat, j) => {
+      groups.push({
+        worldId: sat.id, center: station.position, radius: station.radius + 28 + j * 6,
+        skills: sat.data.skills, color: sat.color, tilt: 1.0 + j * 0.5, phase: 3 + j,
+      })
     })
     return groups
   }
