@@ -261,7 +261,12 @@ export const LAYOUT = {
       data: PROJECTS[0], required: false,
     }],
   },
-  spawn: { worldId: 'independent', offset: 48 },
+  /**
+   * Start on the rim in empty space. The nose points above and to the right of the singularity so
+   * the black hole sits clear of the ship in the lower-left of the first frame and the first
+   * tutorial star reads against dark sky.
+   */
+  spawn: { position: polar(298, 410, 24), lift: 130, side: 150 },
   bounds: 560,
   /**
    * Time-trial courses. Gate positions are world units; `local: true` gates are expressed in the

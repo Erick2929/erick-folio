@@ -5,9 +5,21 @@ import Events from '../Events.js'
  * spawn point, so the stars always line up with where a new pilot is pointing.
  */
 export const TUTORIAL_STEPS = [
-  { id: 'thrust', keys: 'HOLD W TO THRUST', touch: 'HOLD THRUST (OR SWITCH CRUISE ON)', text: 'Fly through the first star', offset: [0, 0, 48] },
-  { id: 'steer', keys: 'A / D TURN · ↑ ↓ CLIMB AND DIVE', touch: 'DRAG THE LEFT SIDE TO STEER', text: 'Turn and climb to the second star', offset: [-38, 20, 92] },
-  { id: 'boost', keys: 'HOLD SHIFT OR SPACE TO BOOST', touch: 'HOLD BOOST', text: 'Boost to the last star', offset: [14, 8, 175] },
+  {
+    id: 'thrust', coach: 'thrust', caps: ['W'],
+    keys: 'HOLD W', touch: 'HOLD THE THRUST BUTTON',
+    text: 'Fly straight ahead, through the star.', offset: [0, 0, 55],
+  },
+  {
+    id: 'steer', coach: 'steer', caps: ['A', 'D', '↑', '↓'],
+    keys: 'A / D TO TURN · ↑ ↓ TO CLIMB OR DIVE', touch: 'DRAG ON THE LEFT HALF OF THE SCREEN',
+    text: 'Steer up and to the left, to the next star.', offset: [-46, 26, 100],
+  },
+  {
+    id: 'boost', coach: 'boost', caps: ['SHIFT'],
+    keys: 'HOLD SHIFT', touch: 'HOLD THE BOOST BUTTON',
+    text: 'Boost to the far star. The blue bar is your reserve.', offset: [-30, 34, 200],
+  },
 ]
 
 /**

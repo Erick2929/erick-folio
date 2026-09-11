@@ -115,9 +115,10 @@
     </div>
     <div id="countdown" class="hidden">3</div>
     <div id="tutorial" class="hidden">
-      <div class="tut-head"><span id="tut-title">FLIGHT SCHOOL 1/3</span><button id="tut-skip" class="tut-skip">SKIP</button></div>
-      <div id="tut-keys">HOLD W TO THRUST</div>
-      <div id="tut-text">Fly through the first star</div>
+      <div class="tut-head"><span id="tut-title">FLIGHT SCHOOL · STEP 1 OF 3</span><button id="tut-skip" class="tut-skip">SKIP</button></div>
+      <div id="tut-caps" class="tut-caps"></div>
+      <div id="tut-keys">HOLD W</div>
+      <div id="tut-text">Fly straight ahead, through the star.</div>
     </div>
     <div id="score-pop" class="score-pop"></div>
 
@@ -273,7 +274,10 @@
 
   <!-- TOUCH CONTROLS -->
   <div id="touch" class="hidden">
-    <div id="touch-steer"><div id="joystick"><div id="joystick-knob"></div></div></div>
+    <div id="touch-steer">
+      <div id="joystick"><div id="joystick-knob"></div></div>
+      <div id="steer-hint" class="hidden"><div class="steer-hint-ring"><div class="steer-hint-dot"></div></div><div class="steer-hint-text">DRAG HERE TO STEER</div></div>
+    </div>
     <div id="touch-buttons">
       <button id="touch-cruise" class="touch-toggle">CRUISE</button>
       <button id="touch-boost" class="touch-btn">BOOST</button>

@@ -78,7 +78,11 @@ tests/                           # physics + GameState behaviour tests (node --t
   DOM so they run under `node --test`. Keep rules there; keep rendering out of them.
 - **Flight school.** `Game/Tutorial.js` (pure, tested) runs three stars placed in the spawn frame
   by `World/TutorialStars.js`; it auto-starts once per browser (`event-horizon:tutorial-done`),
-  can be skipped from its banner, and replays from the pause menu.
+  can be skipped from its banner, and replays from the pause menu. While it runs, `body.onboarding`
+  hides the mission log, radar, nav and next-chapter diamond, the scanner is off, touch buttons
+  get coach marks and the desktop banner shows animated keycaps.
+- **Spawn** is `LAYOUT.spawn`: empty space on the rim, aimed just above the singularity so the black
+  hole sits low in the first frame and the tutorial stars read against dark sky.
 - **Orbiters are shared.** `World/Orbiters.js` builds moons, satellites and trophies for both
   `Planets.js` and `Station.js`; `planetVisuals.js` holds the textures and atmosphere shader.
   Tec Station hosts the master's moon (chapter 6) and the HackMTY trophy (an Easter egg labelled

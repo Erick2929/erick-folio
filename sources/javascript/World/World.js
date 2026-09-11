@@ -123,18 +123,13 @@ export default class World {
     })
   }
 
-  /** Where a run begins: outside the oldest chapter, nose pointed at the singularity. */
+  /** Where a run begins: empty space on the rim, nose pointed above and beside the singularity. */
   spawnPoint() {
-    const world = LAYOUT.worlds.find(w => w.id === LAYOUT.spawn.worldId)
-    const pos = new THREE.Vector3(...world.position)
-    const outward = pos.clone().normalize()
-    const side = new THREE.Vector3(0, 1, 0).cross(outward).normalize()
-    const spawn = pos.clone().addScaledVector(outward, LAYOUT.spawn.offset).addScaledVector(side, 30)
-    spawn.y += 18
-    // Aim past the planet's flank: straight ahead scans ORIGIN and clears its debris belt.
-    const lookAt = pos.clone().addScaledVector(side, 26)
-    lookAt.y = spawn.y
-    return { position: spawn, lookAt }
+    const position = new THREE.Vector3(...LAYOUT.spawn.position)
+    const toHole = position.clone().negate().setY(0).normalize()
+    const right = new THREE.Vector3().crossVectors(toHole, new THREE.Vector3(0, 1, 0)).normalize()
+    const lookAt = new THREE.Vector3(0, LAYOUT.spawn.lift, 0).addScaledVector(right, LAYOUT.spawn.side)
+    return { position, lookAt }
   }
 
   /** A random safe spot on the rim of the system, facing inward. Used after wormhole slips. */

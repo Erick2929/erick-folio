@@ -31,7 +31,7 @@ export default class HUD {
       alerts: $('alerts'), sound: $('btn-sound'), soundPanel: $('sound-panel'),
       race: $('race-hud'), raceName: $('race-name'), raceTime: $('race-time'), raceGate: $('race-gate'), raceBest: $('race-best'),
       countdown: $('countdown'), scorePop: $('score-pop'),
-      tutorial: $('tutorial'), tutTitle: $('tut-title'), tutKeys: $('tut-keys'), tutText: $('tut-text'),
+      tutorial: $('tutorial'), tutTitle: $('tut-title'), tutKeys: $('tut-keys'), tutText: $('tut-text'), tutCaps: $('tut-caps'), steerHint: $('steer-hint'),
     }
     this.radar = new Radar($('radar'))
     this._frame = 0
@@ -164,8 +164,8 @@ export default class HUD {
 
     g.on('tutorial-start', () => this._showTutorialStep(0))
     g.on('tutorial-step', (index) => this._showTutorialStep(index))
-    g.on('tutorial-complete', () => this.el.tutorial.classList.add('hidden'))
-    g.on('tutorial-skip', () => this.el.tutorial.classList.add('hidden'))
+    g.on('tutorial-complete', () => this._endTutorial())
+    g.on('tutorial-skip', () => this._endTutorial())
     document.getElementById('tut-skip').addEventListener('click', () => this.game.skipTutorial())
 
     this._exp.input.onKey('KeyM', () => { this.audio.unlock(); this.audio.toggleMute() })
@@ -177,12 +177,28 @@ export default class HUD {
   _showTutorialStep(index) {
     const step = this.game.tutorial.steps[index]
     const touch = document.body.classList.contains('touch')
-    this.el.tutTitle.textContent = `FLIGHT SCHOOL ${index + 1}/${this.game.tutorial.steps.length}`
+    this.el.tutTitle.textContent = `FLIGHT SCHOOL · STEP ${index + 1} OF ${this.game.tutorial.steps.length}`
     this.el.tutKeys.textContent = touch ? step.touch : step.keys
     this.el.tutText.textContent = step.text
+    this.el.tutCaps.innerHTML = step.caps.map((c) => `<kbd class="press">${c}</kbd>`).join('')
     this.el.tutorial.classList.remove('hidden', 'flash')
     void this.el.tutorial.offsetWidth
     this.el.tutorial.classList.add('flash')
+    this._coach(step.coach)
+  }
+
+  /** Points at the real control for the current step: a pulsing button on touch, nothing on desktop. */
+  _coach(which) {
+    document.querySelectorAll('.touch-btn.coach, .touch-toggle.coach').forEach((b) => b.classList.remove('coach'))
+    this.el.steerHint.classList.add('hidden')
+    if (which === 'thrust') document.getElementById('touch-thrust').classList.add('coach')
+    if (which === 'boost') document.getElementById('touch-boost').classList.add('coach')
+    if (which === 'steer') this.el.steerHint.classList.remove('hidden')
+  }
+
+  _endTutorial() {
+    this.el.tutorial.classList.add('hidden')
+    this._coach(null)
   }
 
   _showCountdown(text, ms = 900) {
@@ -318,8 +334,10 @@ export default class HUD {
     const h = this.sizes.height
     // Keep the marker clear of the HUD edges; on touch the bottom band holds the buttons.
     const touch = document.body.classList.contains('touch')
+    const onboarding = document.body.classList.contains('onboarding')
     const mSide = 70
-    const mTop = 70
+    // During flight school the banner owns the top of the screen; keep the marker below it.
+    const mTop = onboarding ? (touch ? 120 : 185) : 70
     const mBottom = touch ? 240 : 70
     let px = (x * 0.5 + 0.5) * w
     let py = (-y * 0.5 + 0.5) * h

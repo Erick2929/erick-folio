@@ -236,16 +236,31 @@ export default class Game {
   _wireTutorial() {
     const t = this.tutorial
     const stars = () => this.world.tutorialStars
-    t.events.on('start', () => { stars().show(0); this.events.trigger('tutorial-start') })
+    t.events.on('start', () => {
+      stars().show(0)
+      document.body.classList.add('onboarding')
+      this._syncNextMarker()
+      this.events.trigger('tutorial-start')
+    })
     t.events.on('step', (index) => { stars().show(index); this.audio.pickup(index); this.events.trigger('tutorial-step', [index]) })
-    t.events.on('complete', () => {
+    const leaveOnboarding = () => {
       stars().hideAll()
+      document.body.classList.remove('onboarding')
+      this._syncNextMarker()
+    }
+    t.events.on('complete', () => {
+      leaveOnboarding()
       this.audio.scanComplete()
       this.achievements.unlock('cadet')
-      this.alert('FLIGHT SCHOOL COMPLETE · NOW SCAN ORIGIN: FLY CLOSE AND HOLD POSITION', 'good', 6)
+      this.alert('FLIGHT SCHOOL COMPLETE · THE STORY STARTS AT ORIGIN', 'good', 6)
+      this.alert('FOLLOW THE DIAMOND · FLY CLOSE AND HOLD POSITION TO SCAN', 'info', 6)
       this.events.trigger('tutorial-complete')
     })
-    t.events.on('skip', () => { stars().hideAll(); this.events.trigger('tutorial-skip') })
+    t.events.on('skip', () => {
+      leaveOnboarding()
+      this.alert('THE STORY STARTS AT ORIGIN · FOLLOW THE DIAMOND', 'info', 5)
+      this.events.trigger('tutorial-skip')
+    })
   }
 
   /** Flight school: three stars ahead of the spawn point. Auto-starts for first-time visitors. */
@@ -270,7 +285,7 @@ export default class Game {
   }
 
   _syncNextMarker() {
-    const show = this.run.state === 'playing' ? this.nextChapter : null
+    const show = this.run.state === 'playing' && !this.tutorial.active ? this.nextChapter : null
     this.world.nextMarker.setTarget(show)
   }
 
@@ -311,8 +326,8 @@ export default class Game {
     this.audio.duckMusic(false)
     this.world.tutorialStars.hideAll()
     if (this.tutorial.active) this.tutorial.skip()
+    document.body.classList.remove('onboarding')
     if (!this.cvMode && !this.tutorial.seen) {
-      this.alert('WELCOME ABOARD · FLIGHT SCHOOL FIRST, THEN THE STORY', 'info', 5)
       this.startTutorial()
     } else if (!this.cvMode) {
       this.alert('MISSION · LOG EVERY CHAPTER OF THE CAREER, THEN CROSS THE HORIZON', 'info', 6)
@@ -463,6 +478,8 @@ export default class Game {
         this.race.update(delta, ship.position)
       } else if (this.range.active) {
         this.range.update(delta)
+      } else if (this.tutorial.active) {
+        // Flight school: no scanning until the pilot knows how to fly.
       } else {
         const { completed, ticked, locked } = this.scanner.update(delta)
         if (ticked) this.audio.scanTick()
