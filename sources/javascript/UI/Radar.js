@@ -63,6 +63,11 @@ export default class Radar {
       ctx.fillStyle = css
       if (s.kind === 'station') {
         ctx.fillRect(x - 3, y - 3, 6, 6)
+      } else if (s.kind === 'trophy') {
+        ctx.beginPath()
+        ctx.moveTo(x, y - 4); ctx.lineTo(x + 4, y); ctx.lineTo(x, y + 4); ctx.lineTo(x - 4, y)
+        ctx.closePath()
+        ctx.fill()
       } else if (s.kind === 'race') {
         ctx.beginPath()
         ctx.moveTo(x, y - 5)

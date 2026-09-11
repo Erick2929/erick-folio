@@ -54,6 +54,8 @@ export default class Panels {
       <p>${esc(PROFILE.location)} · ${esc(PROFILE.workMode)} · ${esc(PROFILE.connections)} connections on LinkedIn</p>
       <div class="skill-group"><span class="skill-label">TOP SKILLS</span><div class="chips">${PROFILE.topSkills.map((s) => chip(s)).join('')}</div></div>
       <div class="skill-group"><span class="skill-label">PROFICIENT</span><div class="chips">${PROFILE.proficient.map((s) => chip(s)).join('')}</div></div>
+      ${(PROFILE.honors || []).map((h) => `
+      <div class="skill-group"><span class="skill-label">HONORS</span><div><span class="entry-title">${esc(h.title)}</span><br>${esc(h.detail)} <a class="inline-link" href="${h.link}" target="_blank" rel="noopener">Read the story →</a></div></div>`).join('')}
     `
 
     this._body('experience').innerHTML = EXPERIENCE.map((e) => `
@@ -75,7 +77,7 @@ export default class Panels {
         <p>${esc(p.summary)}</p>
         <ul>${p.highlights.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>
         <div class="chips">${p.skills.map((s) => chip(s)).join('')}</div>
-        ${p.link ? `<p style="margin-top:10px"><a class="btn" href="${p.link}" target="_blank" rel="noopener">VISIT →</a></p>` : ''}
+        ${p.link ? `<p style="margin-top:10px"><a class="btn" href="${p.link}" target="_blank" rel="noopener">${esc(p.linkLabel || 'VISIT →')}</a></p>` : ''}
       </div>
     `).join('')
 

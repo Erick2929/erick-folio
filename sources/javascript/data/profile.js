@@ -16,6 +16,13 @@ export const PROFILE = {
     "I love digging into all sorts of tech across systems and overall software engineering. Outside of work, I spend my time on DIY projects and 3D printing.",
   ],
   topSkills: ['React.js', 'JavaScript', 'TypeScript', 'Express.js', 'SQL'],
+  honors: [
+    {
+      title: 'HackMTY 2022 · 1st place',
+      detail: 'My first hackathon, and the largest student hackathon in Latin America. Won it with DropNot, a water-flow monitor built in 24 hours during the Nuevo León water shortage, as Team CodeBeasts.',
+      link: 'https://conecta.tec.mx/es/noticias/monterrey/educacion/ganan-hackathon-con-solucion-al-desabasto-de-agua',
+    },
+  ],
   proficient: ['JavaScript', 'TypeScript', 'Python', 'Node.js', 'Go', 'React', 'Next.js'],
   links: {
     linkedin: 'https://www.linkedin.com/in/ericksiller/',
@@ -119,6 +126,22 @@ export const EDUCATION = [
 
 export const PROJECTS = [
   {
+    id: 'dropnot',
+    name: 'DropNot · HackMTY 2022',
+    role: '1st place · Team CodeBeasts',
+    period: 'Sep 2022',
+    summary: 'Won HackMTY 2022, the Tec de Monterrey hackathon run by its ACM student chapter with Major League Hacking, with DropNot: a device that logs household water flow so people can see, and cut, the water they waste. Built in 24 hours in the middle of the Nuevo León water shortage.',
+    highlights: [
+      'Fun fact: it was my first hackathon ever, and HackMTY is the largest student hackathon in Latin America.',
+      'First place among 100+ teams and 400+ students from five regions, judged on challenges from Banorte, Blue Yonder and Chubb.',
+      'Team CodeBeasts: Jorge González, Erick Siller, Ramiro Garza and Víctor Ramírez.',
+      'The pitch: if people could see how much water they use, the shortage might never have happened, so the tool had to be simple, clear and affordable.',
+    ],
+    link: 'https://conecta.tec.mx/es/noticias/monterrey/educacion/ganan-hackathon-con-solucion-al-desabasto-de-agua',
+    linkLabel: 'READ THE STORY →',
+    skills: ['Hackathons', 'IoT'],
+  },
+  {
     id: 'matchpoint',
     name: 'MatchpointMX',
     role: 'Product Owner & Lead Developer',
@@ -201,17 +224,22 @@ export const LAYOUT = {
         palette: { base: '#2b3a3a', bands: '#4f6b6b', atmosphere: 0x9fe8dc, emissive: 0x0a1414 },
         data: EXPERIENCE[3], required: true, label: 'Scan SOFTTEK moon',
       },
-      satellite: {
+      satellites: [{
         id: 'matchpoint', kind: 'satellite', name: 'MATCHPOINT SAT', objectiveId: 'scan-matchpoint',
-        orbitRadius: 44, radius: 2.2, scanRange: 12, speed: -0.18,
-        data: PROJECTS[0], required: false, label: 'Scan MATCHPOINT satellite',
-      },
+        orbitRadius: 44, radius: 2.2, scanRange: 12, speed: -0.18, label: 'MATCHPOINT', color: 0xffd27a,
+        data: PROJECTS[1], required: false,
+      }],
     },
     {
       id: 'independent', kind: 'planet', name: 'ORIGIN', objectiveId: 'scan-origin', order: 1,
       position: polar(320, 315, -4), radius: 12, scanRange: 32, belt: { inner: 24, outer: 46, count: 150 },
       palette: { base: '#4a2a0f', bands: '#b0672a', atmosphere: 0xffa25c, emissive: 0x2a1204 },
       data: EXPERIENCE[4], required: true, label: 'Scan ORIGIN',
+      satellites: [{
+        id: 'hackmty', kind: 'trophy', name: 'HACKMTY TROPHY', objectiveId: 'scan-hackmty',
+        orbitRadius: 58, radius: 2.4, scanRange: 12, speed: 0.14, label: 'HACKMTY 2022', color: 0xffd700,
+        data: PROJECTS[0], required: false,
+      }],
     },
   ],
   station: {
@@ -289,6 +317,7 @@ export const OBJECTIVES = [
   { id: 'scan-salesforce', label: 'Scan SALESFORCE', required: true },
   { id: 'dock-tec', label: 'Dock at TEC STATION', required: true },
   { id: 'scan-matchpoint', label: 'Scan the MATCHPOINT satellite', required: false },
+  { id: 'scan-hackmty', label: 'Scan the HACKMTY trophy', required: false },
   { id: 'race', label: 'Finish the time trial', required: false },
   { id: 'range', label: 'Post a target range score', required: false },
   { id: 'fragments', label: 'Recover every skill fragment', required: false },
@@ -300,7 +329,7 @@ export const SKILL_GROUPS = [
   { label: 'FRONTEND', skills: ['React', 'Next.js', 'UI Engineering', 'Frontend', 'Mantine', 'Three.js / WebGL'] },
   { label: 'BACKEND', skills: ['Node.js', 'Express.js', 'FastAPI', 'Backend', 'Firebase', 'Google Cloud'] },
   { label: 'AI', skills: ['AI Engineering', 'AI Evaluation', 'LLM Integration', 'Artificial Intelligence'] },
-  { label: 'ENGINEERING', skills: ['Software Architecture', 'Scalable Systems', 'Test Automation', 'CI/CD', 'Computer Science'] },
-  { label: 'LEADERSHIP', skills: ['Team Leadership', 'Product Ownership', 'Entrepreneurship'] },
+  { label: 'ENGINEERING', skills: ['Software Architecture', 'Scalable Systems', 'Test Automation', 'CI/CD', 'Computer Science', 'IoT'] },
+  { label: 'LEADERSHIP', skills: ['Team Leadership', 'Product Ownership', 'Entrepreneurship', 'Hackathons'] },
   { label: 'OFF THE CLOCK', skills: ['3D Printing', 'DIY Builder'] },
 ]

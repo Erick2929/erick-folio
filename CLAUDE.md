@@ -115,6 +115,9 @@ tests/                           # physics + GameState behaviour tests (node --t
   overdrive; they respawn after 45 s.
 - **Achievements**: `Game/Achievements.js` (15), listed in the pause menu, toasted on unlock, persisted
   under `event-horizon:achievements`. Triggers live in `Game.js`.
+- **Orbiters**: each world can carry `satellites` (kind `satellite` for side projects, `trophy`
+  for awards). The Matchpoint satellite orbits Softtek; the HackMTY 2022 trophy orbits ORIGIN and
+  links to the Conecta article. Both are optional objectives and add fragment rings.
 - **Hidden fragments**: four, positions in `HIDDEN_FRAGMENTS` / `World._hiddenFragments`.
 - **Photo mode**: H toggles `body.photo`, which hides the HUD and touch UI.
 

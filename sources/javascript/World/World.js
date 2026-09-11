@@ -84,12 +84,12 @@ export default class World {
           skills: world.moon.data.skills, color: world.moon.palette.atmosphere, tilt: -0.6, phase: 0.5,
         })
       }
-      if (world.satellite) {
+      ;(world.satellites || []).forEach((sat, j) => {
         groups.push({
-          worldId: world.satellite.id, center: world.position, radius: world.radius + 25,
-          skills: world.satellite.data.skills, color: 0xffd27a, tilt: 1.2, phase: 2.2,
+          worldId: sat.id, center: world.position, radius: world.radius + 25 + j * 6,
+          skills: sat.data.skills, color: sat.color, tilt: 1.2 + j * 0.5, phase: 2.2 + j,
         })
-      }
+      })
     })
     groups.push({
       worldId: LAYOUT.station.id, center: LAYOUT.station.position, radius: LAYOUT.station.radius + 12,

@@ -3,7 +3,7 @@ import Events from '../Events.js'
 export const ACHIEVEMENTS = [
   { id: 'first-light', name: 'FIRST LIGHT', hint: 'Log your first chapter.' },
   { id: 'archivist', name: 'ARCHIVIST', hint: 'Log every chapter and open the horizon.' },
-  { id: 'completionist', name: 'COMPLETIONIST', hint: 'Recover all 32 skill fragments.' },
+  { id: 'completionist', name: 'COMPLETIONIST', hint: 'Recover every skill fragment.' },
   { id: 'skimmer', name: 'PHOTON SKIMMER', hint: 'Survive six seconds inside 2.5 horizon radii.' },
   { id: 'speedrunner', name: 'SPEEDRUNNER', hint: 'Cross the horizon in under four minutes of ship time.' },
   { id: 'untouchable', name: 'UNTOUCHABLE', hint: 'Cross the horizon without a single reboot.' },

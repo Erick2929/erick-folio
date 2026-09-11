@@ -44,13 +44,14 @@ export default class Dialog {
     } else {
       const d = scannable.data
       const isProject = scannable.kind === 'satellite'
-      el.tag.textContent = isProject ? `// SATELLITE SCAN · SIDE PROJECT` : `// LOG ENTRY ${Math.min(done, total)}/${total} · SCAN COMPLETE`
+      const isTrophy = scannable.kind === 'trophy'
+      el.tag.textContent = isTrophy ? `// ARTIFACT SCAN · HONORS` : isProject ? `// SATELLITE SCAN · SIDE PROJECT` : `// LOG ENTRY ${Math.min(done, total)}/${total} · SCAN COMPLETE`
       el.title.textContent = (d.company || d.name || '').toUpperCase()
       el.meta.innerHTML = `${esc(d.role)}<br>${esc(d.period)}${d.location ? ' · ' + esc(d.location) : ''}`
       el.summary.textContent = d.summary
       el.highlights.innerHTML = (d.highlights || []).map((h) => `<li>${esc(h)}</li>`).join('')
       el.skills.innerHTML = (d.skills || []).map((s) => `<span class="chip">${esc(s)}</span>`).join('')
-      if (d.link) { el.link.href = d.link; el.link.classList.remove('hidden') } else el.link.classList.add('hidden')
+      if (d.link) { el.link.href = d.link; el.link.textContent = d.linkLabel || 'VISIT →'; el.link.classList.remove('hidden') } else el.link.classList.add('hidden')
     }
 
     el.root.classList.remove('hidden')

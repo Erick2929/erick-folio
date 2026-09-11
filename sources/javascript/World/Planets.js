@@ -83,7 +83,7 @@ export default class Planets {
     this.colliders.push({ getPosition: scannable.getPosition, radius: world.radius, name: world.name, damage: false })
 
     if (world.moon) this._createMoon(world, position)
-    if (world.satellite) this._createSatellite(world, position)
+    for (const spec of world.satellites || []) this._createSatellite(spec, position)
   }
 
   _createMoon(world, parentPos) {
@@ -112,40 +112,23 @@ export default class Planets {
     this.colliders.push({ getPosition, radius: moon.radius, name: moon.name, damage: false })
   }
 
-  _createSatellite(world, parentPos) {
-    const sat = world.satellite
-    const group = new THREE.Group()
-    const body = new THREE.Mesh(
-      new THREE.BoxGeometry(1.6, 1.6, 2.4),
-      new THREE.MeshStandardMaterial({ color: 0xd8dde6, metalness: 0.8, roughness: 0.3, emissive: 0x111a22 })
-    )
-    group.add(body)
-    const panelMat = new THREE.MeshStandardMaterial({ color: 0x1c3f7a, metalness: 0.6, roughness: 0.4, emissive: 0x0a1f44, emissiveIntensity: 0.8 })
-    for (const side of [-1, 1]) {
-      const panel = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.08, 1.6), panelMat)
-      panel.position.x = side * 3
-      group.add(panel)
-    }
-    const beacon = new THREE.Mesh(
-      new THREE.SphereGeometry(0.35, 8, 8),
-      new THREE.MeshBasicMaterial({ color: 0xffd27a })
-    )
-    beacon.position.y = 1.2
-    group.add(beacon)
-    const label = makeLabelSprite('MATCHPOINT', { color: '#ffd27a', width: 11 })
-    label.position.y = 3.2
+  /** A small orbiter around a world: a satellite (side project) or a trophy (award). */
+  _createSatellite(sat, parentPos) {
+    const group = sat.kind === 'trophy' ? trophyMesh(sat.color) : satelliteMesh()
+    const label = makeLabelSprite(sat.label, { color: hexToCss(sat.color), width: 11 })
+    label.position.y = 3.6
     group.add(label)
     this.scene.add(group)
 
-    const orbiter = { mesh: group, center: parentPos, radius: sat.orbitRadius, speed: sat.speed, angle: 3.9, tilt: -0.5, beacon }
+    const orbiter = { mesh: group, center: parentPos, radius: sat.orbitRadius, speed: sat.speed, angle: sat.kind === 'trophy' ? 1.3 : 3.9, tilt: sat.kind === 'trophy' ? 0.4 : -0.5, beacon: group.userData.beacon }
     this._orbiters.push(orbiter)
-    this._spinners.push({ mesh: group, rate: 0.6 })
+    this._spinners.push({ mesh: group, rate: sat.kind === 'trophy' ? 0.8 : 0.6 })
 
     const getPosition = (out) => out.copy(group.position)
     this.scannables.push({
-      id: sat.id, name: sat.name, kind: 'satellite', objectiveId: sat.objectiveId,
+      id: sat.id, name: sat.name, kind: sat.kind, objectiveId: sat.objectiveId,
       scanRange: sat.scanRange, radius: sat.radius, data: sat.data, required: sat.required,
-      label: sat.label, color: 0xffd27a, getPosition,
+      label: sat.label, color: sat.color, getPosition,
     })
   }
 
@@ -159,6 +142,47 @@ export default class Planets {
       if (o.beacon) o.beacon.material.color.setScalar(0.5 + 0.5 * Math.sin(elapsed * 6))
     }
   }
+}
+
+function satelliteMesh() {
+  const group = new THREE.Group()
+  const body = new THREE.Mesh(
+    new THREE.BoxGeometry(1.6, 1.6, 2.4),
+    new THREE.MeshStandardMaterial({ color: 0xd8dde6, metalness: 0.8, roughness: 0.3, emissive: 0x111a22 })
+  )
+  group.add(body)
+  const panelMat = new THREE.MeshStandardMaterial({ color: 0x1c3f7a, metalness: 0.6, roughness: 0.4, emissive: 0x0a1f44, emissiveIntensity: 0.8 })
+  for (const side of [-1, 1]) {
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.08, 1.6), panelMat)
+    panel.position.x = side * 3
+    group.add(panel)
+  }
+  const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffd27a }))
+  beacon.position.y = 1.2
+  group.add(beacon)
+  group.userData.beacon = beacon
+  return group
+}
+
+/** A floating golden award: a faceted gem on a plinth inside a slow ring. */
+function trophyMesh(color) {
+  const group = new THREE.Group()
+  const gold = new THREE.MeshStandardMaterial({ color, metalness: 0.9, roughness: 0.25, emissive: 0x332000, emissiveIntensity: 1.2 })
+  const gem = new THREE.Mesh(new THREE.OctahedronGeometry(1.5, 0), gold)
+  gem.scale.set(1, 1.5, 1)
+  gem.position.y = 0.6
+  group.add(gem)
+  const plinth = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.4, 0.5, 12), gold)
+  plinth.position.y = -1.6
+  group.add(plinth)
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.12, 8, 40), new THREE.MeshBasicMaterial({ color }))
+  ring.rotation.x = Math.PI / 2
+  group.add(ring)
+  const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), new THREE.MeshBasicMaterial({ color: 0xfff1b0 }))
+  beacon.position.y = 2.6
+  group.add(beacon)
+  group.userData.beacon = beacon
+  return group
 }
 
 function atmosphere(radius, color, power, intensity) {
