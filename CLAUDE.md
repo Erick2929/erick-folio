@@ -76,6 +76,9 @@ tests/                           # physics + GameState behaviour tests (node --t
   radius in units of screen height.
 - **Pure game logic.** `Game/physics.js` and `Game/GameState.js` never import three or touch the
   DOM so they run under `node --test`. Keep rules there; keep rendering out of them.
+- **Cursor.** `UI/Cursor.js` replaces the native pointer on desktop with a black-hole cursor
+  (`#cursor`, `body.mouse`), swells it over clickable UI and draws `#steer-line` from the reticle
+  to the cursor while it is steering. Touch devices skip it.
 - **Flight school.** `Game/Tutorial.js` (pure, tested) runs three stars placed in the spawn frame
   by `World/TutorialStars.js`; it auto-starts once per browser (`event-horizon:tutorial-done`),
   can be skipped from its banner, and replays from the pause menu. While it runs, `body.onboarding`
@@ -100,15 +103,15 @@ tests/                           # physics + GameState behaviour tests (node --t
 | Key | Action |
 |-----|--------|
 | W / S | Thrust / brake |
-| A / D (or ← →) | Yaw |
-| ↑ / ↓ (or Q / E) | Pitch |
+| Mouse | The ship flies toward the cursor (`cursorSteer` in `Input.js`: dead zone + soft curve; paused over UI; toggle in the pause menu, key `event-horizon:mouselook`) |
+| A / D (or ← →) | Yaw with keys |
+| ↑ / ↓ (or Q / E) | Pitch with keys |
 | Shift / Space | Boost. 6 s reserve, recharges only while released, locks at empty until 25% |
 | F / left click | Fire the blaster (touch: hold FIRE; a quick tap pulses instead) |
 | R | Scanner pulse (lights up nearby fragments) |
 | H | Photo mode (hides the HUD) |
 | [ / ] | Master volume down / up (also sliders on the title screen, the ♪ button, and the pause menu) |
 | Esc / P | Pause menu: restart, flight school, start time trial or target range, abort, reload, sound, achievements · M mute · G fullscreen · Enter launch/continue |
-| Mouse drag | Steer (trackpad friendly) |
 | Touch | Drag left half to steer · THRUST / BOOST / BRAKE hold · PULSE tap · CRUISE toggle |
 
 ## Side Content and How to Reach It

@@ -526,3 +526,24 @@ body.touch .tut-caps { display: none; }
 .steer-hint-dot { position: absolute; width: 36px; height: 36px; border-radius: 50%; background: rgba(242, 165, 65, 0.55); left: 44px; top: 44px; animation: steer-loop 2.2s ease-in-out infinite; }
 @keyframes steer-loop { 0% { transform: translate(0, 0); } 25% { transform: translate(-30px, -22px); } 50% { transform: translate(0, -34px); } 75% { transform: translate(30px, -18px); } 100% { transform: translate(0, 0); } }
 .steer-hint-text { margin-top: 10px; font-size: 10px; letter-spacing: 3px; color: var(--amber); }
+
+/* ── black-hole cursor ───────────────────────────────── */
+body.mouse, body.mouse * { cursor: none !important; }
+#cursor { position: fixed; left: 0; top: 0; width: 0; height: 0; z-index: 500; pointer-events: none; }
+#cursor > div { position: absolute; left: 0; top: 0; border-radius: 50%; transform: translate(-50%, -50%); transition: width 0.15s ease, height 0.15s ease, opacity 0.15s ease, border-color 0.15s ease; }
+.cursor-glow { width: 44px; height: 44px; background: radial-gradient(circle, rgba(242, 165, 65, 0.22) 0%, rgba(242, 165, 65, 0) 70%); }
+.cursor-ring {
+  width: 22px; height: 22px; border: 2px solid var(--amber);
+  border-top-color: rgba(255, 224, 170, 0.95); border-bottom-color: rgba(170, 92, 26, 0.85);
+  box-shadow: 0 0 10px rgba(242, 165, 65, 0.45); animation: cursor-spin 2.6s linear infinite;
+}
+.cursor-core { width: 10px; height: 10px; background: #000; box-shadow: inset 0 0 4px rgba(0, 0, 0, 1), 0 0 2px rgba(255, 224, 170, 0.6); }
+@keyframes cursor-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+#cursor.interactive .cursor-ring { width: 32px; height: 32px; border-color: var(--cyan); border-top-color: #fff; border-bottom-color: var(--cyan); box-shadow: 0 0 14px var(--cyan-soft); }
+#cursor.interactive .cursor-core { width: 6px; height: 6px; }
+#cursor.interactive .cursor-glow { opacity: 0.4; }
+#cursor.steering .cursor-ring { border-color: #ffd9a0; box-shadow: 0 0 16px rgba(242, 165, 65, 0.7); }
+#cursor.click .cursor-ring { animation: cursor-spin 2.6s linear infinite, cursor-click 0.35s ease; }
+@keyframes cursor-click { 0% { width: 22px; height: 22px; } 40% { width: 12px; height: 12px; } 100% { width: 22px; height: 22px; } }
+#steer-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#steer-line { stroke: rgba(242, 165, 65, 0.35); stroke-width: 1.5; stroke-dasharray: 6 8; }

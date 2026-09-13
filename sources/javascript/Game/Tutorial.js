@@ -11,8 +11,8 @@ export const TUTORIAL_STEPS = [
     text: 'Fly straight ahead, through the star.', offset: [0, 0, 55],
   },
   {
-    id: 'steer', coach: 'steer', caps: ['A', 'D', '↑', '↓'],
-    keys: 'A / D TO TURN · ↑ ↓ TO CLIMB OR DIVE', touch: 'DRAG ON THE LEFT HALF OF THE SCREEN',
+    id: 'steer', coach: 'steer', caps: ['MOUSE'],
+    keys: 'MOVE THE MOUSE · THE SHIP FLIES TOWARD THE CURSOR', touch: 'DRAG ON THE LEFT HALF OF THE SCREEN',
     text: 'Steer up and to the left, to the next star.', offset: [-46, 26, 100],
   },
   {

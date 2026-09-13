@@ -1,40 +1,62 @@
+const MOUSELOOK_KEY = 'event-horizon:mouselook'
+const UI_SELECTOR = 'button, a, input, select, textarea, label, .dialog, .portfolio-panel, .sound-panel, #pause, #finale, #title, #rotate-overlay'
+
 /**
- * Turns keyboard, pointer-drag and touch input into flight intent.
+ * Turns keyboard, mouse and touch input into flight intent.
  *
- * Consumers read `yaw`, `pitch` (-1..1), `thrust` (-0.35, 0, 1), `boost` (Shift or Space)
- * and poll `consumePulse()` for the scanner pulse edge (R). One-shot keys (Escape, M, F, Enter)
- * are exposed through `onKey`. Touch controls feed `touch` directly.
+ * On desktop the cursor is the direction: the ship turns toward the cursor's offset from the
+ * screen centre (see `cursorSteer`), pausing while the pointer is over UI. Consumers read `yaw`,
+ * `pitch` (-1..1), `thrust` (-0.35, 0, 1), `boost` (Shift or Space), `fire`, and poll
+ * `consumePulse()` for the scanner pulse edge (R). One-shot keys are exposed through `onKey`.
+ * Touch controls feed `touch` directly.
  */
 export default class Input {
   constructor(canvas) {
     this.keys = {}
     this.touch = { yaw: 0, pitch: 0, thrust: 0, boost: false, pulse: false, fire: false }
     this.pointerFire = false
-    this.drag = { active: false, x0: 0, y0: 0, x: 0, y: 0 }
+    this.mouse = { x: 0, y: 0, offsetX: 0, offsetY: 0, inside: false, overUi: false }
+    this.mouseLook = readMouseLook()
     this.enabled = true
     this._pulseQueued = false
     this._keyHandlers = {}
 
     window.addEventListener('keydown', (e) => this._onKeyDown(e))
     window.addEventListener('keyup', (e) => { this.keys[e.code] = false })
-    window.addEventListener('blur', () => { this.keys = {} })
+    window.addEventListener('blur', () => { this.keys = {}; this.pointerFire = false })
+
+    window.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch') return
+      this.mouse.x = e.clientX
+      this.mouse.y = e.clientY
+      this.mouse.inside = true
+      const half = Math.max(1, window.innerHeight * 0.45)
+      this.mouse.offsetX = clamp((e.clientX - window.innerWidth / 2) / half, -1, 1)
+      this.mouse.offsetY = clamp((e.clientY - window.innerHeight / 2) / half, -1, 1)
+      this.mouse.overUi = !!(e.target instanceof Element && e.target.closest(UI_SELECTOR))
+    })
+    document.addEventListener('pointerleave', () => { this.mouse.inside = false })
+    document.addEventListener('mouseleave', () => { this.mouse.inside = false })
 
     canvas.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'touch') return
       if (e.button === 0) this.pointerFire = true
-      this.drag.active = true
-      this.drag.x0 = this.drag.x = e.clientX
-      this.drag.y0 = this.drag.y = e.clientY
-      canvas.setPointerCapture?.(e.pointerId)
     })
-    canvas.addEventListener('pointermove', (e) => {
-      if (!this.drag.active) return
-      this.drag.x = e.clientX
-      this.drag.y = e.clientY
-    })
-    const endDrag = () => { this.drag.active = false; this.pointerFire = false }
-    canvas.addEventListener('pointerup', endDrag)
-    canvas.addEventListener('pointercancel', endDrag)
+    const release = () => { this.pointerFire = false }
+    window.addEventListener('pointerup', release)
+    window.addEventListener('pointercancel', release)
+  }
+
+  /** Cursor-look on or off (persisted). Keys keep working either way. */
+  setMouseLook(on) {
+    this.mouseLook = !!on
+    try { localStorage.setItem(MOUSELOOK_KEY, this.mouseLook ? '1' : '0') } catch { /* private mode */ }
+  }
+
+  /** The steering the cursor currently asks for, or zero when it should not steer. */
+  get steer() {
+    if (!this.enabled || !this.mouseLook || !this.mouse.inside || this.mouse.overUi) return { yaw: 0, pitch: 0 }
+    return cursorSteer(this.mouse.offsetX, this.mouse.offsetY)
   }
 
   _onKeyDown(e) {
@@ -58,7 +80,7 @@ export default class Input {
     let v = 0
     if (this._down('KeyA', 'ArrowLeft')) v += 1
     if (this._down('KeyD', 'ArrowRight')) v -= 1
-    if (this.drag.active) v -= clamp((this.drag.x - this.drag.x0) / 120, -1, 1)
+    v += this.steer.yaw
     v += this.touch.yaw
     return clamp(v, -1, 1)
   }
@@ -68,7 +90,7 @@ export default class Input {
     let v = 0
     if (this._down('ArrowUp', 'KeyQ')) v += 1
     if (this._down('ArrowDown', 'KeyE')) v -= 1
-    if (this.drag.active) v -= clamp((this.drag.y - this.drag.y0) / 120, -1, 1)
+    v += this.steer.pitch
     v += this.touch.pitch
     return clamp(v, -1, 1)
   }
@@ -101,6 +123,25 @@ export default class Input {
 }
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v))
+
+/**
+ * Maps the cursor's offset from the screen centre (-1..1 per axis, in units of 45% of the
+ * viewport height) to yaw/pitch. Nothing inside the dead zone, then a soft curve up to full
+ * deflection. Cursor right of centre yaws right (negative), cursor above centre climbs (positive).
+ */
+export function cursorSteer(offsetX, offsetY, { deadZone = 0.12, curve = 1.4 } = {}) {
+  const shape = (v) => {
+    const a = Math.min(1, Math.abs(v))
+    if (a <= deadZone) return 0
+    const t = (a - deadZone) / (1 - deadZone)
+    return Math.sign(v) * Math.pow(t, curve)
+  }
+  return { yaw: -shape(offsetX) || 0, pitch: -shape(offsetY) || 0 }
+}
+
+function readMouseLook() {
+  try { return localStorage.getItem(MOUSELOOK_KEY) !== '0' } catch { return true }
+}
 
 /** Resolves the touch buttons into a thrust value: brake wins, then held thrust or cruise. */
 export function touchThrust({ thrust = false, brake = false, cruise = false } = {}) {

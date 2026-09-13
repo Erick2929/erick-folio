@@ -20,6 +20,8 @@ export default class PauseMenu {
     $('btn-abort-race').addEventListener('click', () => { this.close(); this.game.abortActivity() })
     $('btn-reload').addEventListener('click', () => window.location.reload())
     $('btn-tutorial').addEventListener('click', () => { this.close(); this.game.startTutorial() })
+    $('btn-mouselook').addEventListener('click', () => { exp.input.setMouseLook(!exp.input.mouseLook); this._syncMouseLook() })
+    this._syncMouseLook()
     exp.input.onKey('Escape', () => this._onEscape())
     exp.input.onKey('KeyP', () => this.toggle())
   }
@@ -32,6 +34,10 @@ export default class PauseMenu {
     if (this._exp.panels.isOpen) return this._exp.panels.close()
     if (run.state === 'finale') return
     this.toggle()
+  }
+
+  _syncMouseLook() {
+    document.getElementById('btn-mouselook').textContent = this._exp.input.mouseLook ? '[ MOUSE STEER: ON ]' : '[ MOUSE STEER: OFF ]'
   }
 
   toggle() { this.isOpen ? this.close() : this.open() }

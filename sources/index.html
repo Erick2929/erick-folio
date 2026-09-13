@@ -63,16 +63,16 @@
           <div class="ctl-note">Landscape and sound on for the best ride</div>
         </div>
         <div class="ctl-list keyboard">
+        <div class="ctl"><span class="keys"><kbd>MOUSE</kbd></span><span>steer · the ship flies toward the cursor</span></div>
         <div class="ctl"><span class="keys"><kbd>W</kbd><kbd>S</kbd></span><span>thrust · brake</span></div>
-        <div class="ctl"><span class="keys"><kbd>A</kbd><kbd>D</kbd></span><span>yaw</span></div>
-        <div class="ctl"><span class="keys"><kbd>↑</kbd><kbd>↓</kbd></span><span>pitch</span></div>
+        <div class="ctl"><span class="keys"><kbd>A</kbd><kbd>D</kbd><kbd>↑</kbd><kbd>↓</kbd></span><span>steer with keys instead</span></div>
         <div class="ctl"><span class="keys"><kbd>SHIFT</kbd><kbd>SPACE</kbd></span><span>boost</span></div>
         <div class="ctl"><span class="keys"><kbd>F</kbd></span><span>fire · click also fires</span></div>
         <div class="ctl"><span class="keys"><kbd>R</kbd></span><span>scanner pulse</span></div>
         <div class="ctl"><span class="keys"><kbd>H</kbd></span><span>photo mode</span></div>
         <div class="ctl"><span class="keys"><kbd>[</kbd><kbd>]</kbd></span><span>volume · M mutes</span></div>
         <div class="ctl"><span class="keys"><kbd>ESC</kbd></span><span>pause · achievements</span></div>
-        <div class="ctl-note">Mouse drag also steers · Fuel cells refill boost · Best with sound on</div>
+        <div class="ctl-note">Fuel cells refill boost · Best with sound on</div>
         </div>
       </div>
 
@@ -122,6 +122,8 @@
     </div>
     <div id="score-pop" class="score-pop"></div>
 
+    <svg id="steer-svg"><line id="steer-line" class="hidden" x1="0" y1="0" x2="0" y2="0" /></svg>
+
     <div id="reticle">
       <svg viewBox="0 0 80 80" width="80" height="80">
         <circle class="scan-track" cx="40" cy="40" r="34" />
@@ -154,7 +156,7 @@
         <button class="hud-nav-btn" data-panel="education">EDUCATION</button>
         <button class="hud-nav-btn" data-panel="contact">CONTACT</button>
       </div>
-      <div id="hud-controls">W S THRUST · A D YAW · ↑ ↓ PITCH · SHIFT/SPACE BOOST · F FIRE · R PULSE · H PHOTO · ESC PAUSE</div>
+      <div id="hud-controls">MOUSE STEER · W S THRUST · SHIFT/SPACE BOOST · F FIRE · R PULSE · H PHOTO · ESC PAUSE</div>
     </div>
 
     <div id="sound-panel" class="sound-panel">
@@ -217,15 +219,16 @@
         <button id="btn-range" class="btn">[ TARGET RANGE ]</button>
         <button id="btn-abort-race" class="btn hidden">[ ABORT RACE ]</button>
         <button id="btn-tutorial" class="btn">[ FLIGHT SCHOOL ]</button>
+        <button id="btn-mouselook" class="btn">[ MOUSE STEER: ON ]</button>
         <button id="btn-reload" class="btn">[ RELOAD ]</button>
       </div>
       <div id="pause-volume" class="pause-volume"></div>
       <div id="pause-best" class="pause-best"></div>
       <p class="pause-touch">Drag on the left half to steer. Hold THRUST or switch CRUISE on to fly, hold BOOST for speed, BRAKE to slow down near a world. Hold FIRE to shoot, tap it to pulse for fragments.</p>
       <div class="pause-controls keyboard">
+        <div><kbd>MOUSE</kbd> steer toward the cursor</div>
         <div><kbd>W</kbd><kbd>S</kbd> thrust · brake</div>
-        <div><kbd>A</kbd><kbd>D</kbd> yaw</div>
-        <div><kbd>↑</kbd><kbd>↓</kbd> pitch</div>
+        <div><kbd>A</kbd><kbd>D</kbd><kbd>↑</kbd><kbd>↓</kbd> steer with keys</div>
         <div><kbd>SHIFT</kbd><kbd>SPACE</kbd> boost</div>
         <div><kbd>F</kbd> fire · click fires too</div>
         <div><kbd>R</kbd> scanner pulse</div>
@@ -271,6 +274,9 @@
       <button id="rotate-continue" class="btn">[ CONTINUE IN PORTRAIT ]</button>
     </div>
   </div>
+
+  <!-- BLACK-HOLE CURSOR (desktop) -->
+  <div id="cursor" class="hidden"><div class="cursor-glow"></div><div class="cursor-ring"></div><div class="cursor-core"></div></div>
 
   <!-- TOUCH CONTROLS -->
   <div id="touch" class="hidden">
