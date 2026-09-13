@@ -21,6 +21,7 @@ export default class MouseLook {
     this._autoPausedAt = -Infinity
     this.canvas.addEventListener('click', () => this.lock())
     ;['launch', 'restart', 'freeflight'].forEach((name) => this.game.events.on(name, () => this.lock()))
+    this.game.events.on('finale', () => this.unlock())
     document.addEventListener('pointerlockchange', () => this._onLockChange())
     exp.ticker.events.on('tick', () => this._update(), 14)
   }
@@ -57,8 +58,11 @@ export default class MouseLook {
     if (document.pointerLockElement) document.exitPointerLock?.()
   }
 
+  /** The pointer stays captured only while the ship is flyable; the finale and any overlay free it. */
   _update() {
-    const free = this.game.run.running && !this.game.overlayOpen && this.input.wantsLock && !this.input.locked
+    const flyable = this.game.run.running && !this.game.overlayOpen
+    if (!flyable && this.input.locked) this.unlock()
+    const free = flyable && this.input.wantsLock && !this.input.locked
     this.hint.classList.toggle('hidden', !free)
   }
 }

@@ -67,7 +67,7 @@ tests/                           # physics + GameState behaviour tests (node --t
 ## Key Decisions
 - **Mouse look and menus.** `UI/MouseLook.js` owns the pointer lock: it captures on launch/restart/
   free flight, on a click on the view, and whenever the last overlay closes; `Game.setOverlay(true)`
-  releases it. Losing the lock mid-flight (Esc, alt-tab) opens the pause menu, and a trailing Esc
+  and the finale release it, and every tick enforces "captured only while the ship is flyable". Losing the lock mid-flight (Esc, alt-tab) opens the pause menu, and a trailing Esc
   keydown is ignored for 400 ms so the menu does not close again. `#lock-hint` shows while the ship
   is flyable but the mouse is free. Headless Chromium and embedded browser panes reject
   `requestPointerLock` (WrongDocumentError: the view has no OS focus); verify with headed Chrome via
