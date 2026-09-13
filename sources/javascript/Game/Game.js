@@ -348,6 +348,8 @@ export default class Game {
     this.alert('FREE FLIGHT · THE REMAINING FRAGMENTS AND COURSES ARE YOURS', 'good', 5)
   }
 
+  get overlayOpen() { return this._overlays > 0 }
+
   /** Overlays (panels, dialogs, pause) freeze the run while they are open. */
   setOverlay(open) {
     this._overlays = Math.max(0, this._overlays + (open ? 1 : -1))
@@ -356,6 +358,8 @@ export default class Game {
     else this.run.resume()
     this.input.enabled = !paused
     this.audio.duckMusic(paused)
+    if (paused) this._exp.mouseLook?.unlock()
+    else this._exp.mouseLook?.lock()
   }
 
   get overlayOpen() { return this._overlays > 0 }

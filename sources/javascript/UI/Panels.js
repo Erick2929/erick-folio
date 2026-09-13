@@ -50,7 +50,8 @@ export default class Panels {
   _build() {
     this._body('about').innerHTML = `
       <div class="panel-meta">${esc(PROFILE.headline)}</div>
-      ${PROFILE.about.map((p, i) => `<p class="${i === 0 ? 'panel-lead' : ''}">${esc(p)}</p>`).join('')}
+      ${PROFILE.pitch ? `<p class="panel-lead">${esc(PROFILE.pitch)}</p>` : ''}
+      ${PROFILE.about.map((p) => `<p>${esc(p)}</p>`).join('')}
       <p>${esc(PROFILE.location)} · ${esc(PROFILE.workMode)} · ${esc(PROFILE.connections)} connections on LinkedIn</p>
       <div class="skill-group"><span class="skill-label">TOP SKILLS</span><div class="chips">${PROFILE.topSkills.map((s) => chip(s)).join('')}</div></div>
       <div class="skill-group"><span class="skill-label">PROFICIENT</span><div class="chips">${PROFILE.proficient.map((s) => chip(s)).join('')}</div></div>
@@ -94,8 +95,8 @@ export default class Panels {
     this._body('education').innerHTML = EDUCATION.map((e) => `
       <div class="entry" data-entry="${e.id}">
         <span class="logged-tag hidden">LOGGED</span>
-        <div class="entry-head"><span class="entry-title">${esc(e.school)}</span><span class="entry-period">${esc(e.period)}</span></div>
-        <div class="entry-role">${esc(e.degree)}</div>
+        <div class="entry-head"><span class="entry-title">${esc(e.degree)}</span><span class="entry-period">${esc(e.period)}</span></div>
+        <div class="entry-role">${esc(e.school)}</div>
         <p>${esc(e.summary)}</p>
         <ul>${(e.highlights || []).map((h) => `<li>${esc(h)}</li>`).join('')}</ul>
         ${e.skills.length ? `<div class="chips">${e.skills.map((s) => chip(s)).join('')}</div>` : ''}

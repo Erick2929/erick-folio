@@ -41,9 +41,11 @@ export default class Dialog {
       : isProject ? '// SATELLITE SCAN · SIDE PROJECT'
       : scannable.kind === 'station' ? `// DOCKING COMPLETE · LOG ENTRY ${Math.min(done, total)}/${total}`
       : `// LOG ENTRY ${Math.min(done, total)}/${total} · SCAN COMPLETE`
-    el.title.textContent = (d.school || d.company || d.name || '').toUpperCase()
-    const role = isEducation ? d.degree : d.role
-    el.meta.innerHTML = `${esc(role)}<br>${esc(d.period)}${d.location ? ' · ' + esc(d.location) : ''}`
+    // Recruiters read the headline first: the degree for education, the company for jobs,
+    // then the role in bright type, then dates.
+    el.title.textContent = (isEducation ? d.degree : (d.company || d.name || '')).toUpperCase()
+    const role = isEducation ? d.school : d.role
+    el.meta.innerHTML = `<span class="log-role">${esc(role)}</span><br><span class="log-when">${esc(d.period)}${d.location ? ' · ' + esc(d.location) : ''}</span>`
     el.summary.textContent = d.summary
     el.highlights.innerHTML = (d.highlights || []).map((h) => `<li>${esc(h)}</li>`).join('')
     el.skills.innerHTML = (d.skills || []).map((s) => `<span class="chip">${esc(s)}</span>`).join('')

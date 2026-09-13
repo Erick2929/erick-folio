@@ -12,7 +12,7 @@ export const TUTORIAL_STEPS = [
   },
   {
     id: 'steer', coach: 'steer', caps: ['MOUSE'],
-    keys: 'MOVE THE MOUSE · THE SHIP FLIES TOWARD THE CURSOR', touch: 'DRAG ON THE LEFT HALF OF THE SCREEN',
+    keys: 'MOVE THE MOUSE TO AIM · THE SHIP FOLLOWS', touch: 'DRAG ON THE LEFT HALF OF THE SCREEN',
     text: 'Steer up and to the left, to the next star.', offset: [-46, 26, 100],
   },
   {

@@ -22,11 +22,17 @@ export default class PauseMenu {
     $('btn-tutorial').addEventListener('click', () => { this.close(); this.game.startTutorial() })
     $('btn-mouselook').addEventListener('click', () => { exp.input.setMouseLook(!exp.input.mouseLook); this._syncMouseLook() })
     this._syncMouseLook()
+    const sens = $('sens-slider')
+    const sensValue = $('sens-value')
+    const showSens = () => { sens.value = Math.round(exp.input.sensitivityScale * 100); sensValue.textContent = `${exp.input.sensitivityScale.toFixed(2)}x` }
+    sens.addEventListener('input', () => { exp.input.setSensitivity(sens.value / 100); showSens() })
+    showSens()
     exp.input.onKey('Escape', () => this._onEscape())
     exp.input.onKey('KeyP', () => this.toggle())
   }
 
   _onEscape() {
+    if (this._exp.mouseLook?.escapeShielded) return
     const run = this.game.run
     if (run.state === 'title') return
     if (this._exp.dialog.isOpen) return this._exp.dialog.close()
@@ -37,7 +43,7 @@ export default class PauseMenu {
   }
 
   _syncMouseLook() {
-    document.getElementById('btn-mouselook').textContent = this._exp.input.mouseLook ? '[ MOUSE STEER: ON ]' : '[ MOUSE STEER: OFF ]'
+    document.getElementById('btn-mouselook').textContent = this._exp.input.mouseLook ? '[ MOUSE LOOK: ON ]' : '[ MOUSE LOOK: OFF ]'
   }
 
   toggle() { this.isOpen ? this.close() : this.open() }

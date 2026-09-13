@@ -65,6 +65,18 @@ tests/                           # physics + GameState behaviour tests (node --t
 ```
 
 ## Key Decisions
+- **Mouse look and menus.** `UI/MouseLook.js` owns the pointer lock: it captures on launch/restart/
+  free flight, on a click on the view, and whenever the last overlay closes; `Game.setOverlay(true)`
+  releases it. Losing the lock mid-flight (Esc, alt-tab) opens the pause menu, and a trailing Esc
+  keydown is ignored for 400 ms so the menu does not close again. `#lock-hint` shows while the ship
+  is flyable but the mouse is free. Headless Chromium and embedded browser panes reject
+  `requestPointerLock` (WrongDocumentError: the view has no OS focus); verify with headed Chrome via
+  playwright-core plus `page.bringToFront()`. Synthetic clicks cannot restore focus after an Esc
+  unlock there, native clicks can, so emulate lock state with a `pointerLockElement` getter override
+  and `pointerlockchange` events in headless runs.
+- **Dialog focus.** Log cards headline what a recruiter scans for: the degree for education, the
+  company for jobs, then the role in bright type, then dates (`Dialog.js`, `.log-role`). ABOUT
+  opens with `PROFILE.pitch`.
 - **Content lives in one place.** Edit `data/profile.js` to update the CV; the panels, scan
   dialogs, fragments and objectives are all generated from it.
 - **Two render layers.** Layer 0 = world (gets lensed and can fall into the shadow). Layer 1 =
@@ -77,8 +89,8 @@ tests/                           # physics + GameState behaviour tests (node --t
 - **Pure game logic.** `Game/physics.js` and `Game/GameState.js` never import three or touch the
   DOM so they run under `node --test`. Keep rules there; keep rendering out of them.
 - **Cursor.** `UI/Cursor.js` replaces the native pointer on desktop with a black-hole cursor
-  (`#cursor`, `body.mouse`), swells it over clickable UI and draws `#steer-line` from the reticle
-  to the cursor while it is steering. Touch devices skip it.
+  (`#cursor`, `body.mouse`) that is only visible while the mouse is free (title, menus, dialogs)
+  and swells over clickable UI. Touch devices skip it.
 - **Flight school.** `Game/Tutorial.js` (pure, tested) runs three stars placed in the spawn frame
   by `World/TutorialStars.js`; it auto-starts once per browser (`event-horizon:tutorial-done`),
   can be skipped from its banner, and replays from the pause menu. While it runs, `body.onboarding`
@@ -103,7 +115,7 @@ tests/                           # physics + GameState behaviour tests (node --t
 | Key | Action |
 |-----|--------|
 | W / S | Thrust / brake |
-| Mouse | The ship flies toward the cursor (`cursorSteer` in `Input.js`: dead zone + soft curve; paused over UI; toggle in the pause menu, key `event-horizon:mouselook`) |
+| Mouse | FPS look: the pointer is locked while flying and mouse travel rotates the ship (`mouseLook` in `Input.js`, applied directly in `Ship._fly`). Menus and dialogs release it (`Game.setOverlay` → `UI/MouseLook.js`), closing them recaptures it, clicking the view recaptures it. Toggle and a 0.2–3× sensitivity slider in the pause menu (`event-horizon:mouselook`, `event-horizon:sensitivity`). Falls back to cursor-offset steering (`cursorSteer`) if pointer lock is unavailable |
 | A / D (or ← →) | Yaw with keys |
 | ↑ / ↓ (or Q / E) | Pitch with keys |
 | Shift / Space | Boost. 6 s reserve, recharges only while released, locks at empty until 25% |
@@ -167,6 +179,8 @@ tests/                           # physics + GameState behaviour tests (node --t
   photon ring in `Render/shaders.js`, exposure in `Renderer._setup`.
 - Time dilation: `Game/physics.js` (`DILATION_CAP`).
 - World placement: `LAYOUT` in `data/profile.js` (polar coordinates around the singularity).
+
+- Mouse look: `LOOK_SENSITIVITY` 0.0015 rad/px times the player's slider scale, `LOOK_FRAME_CAP` 0.35 rad per frame (`Input.js`).
 
 ## Icons
 `node scripts/make-icons.mjs` regenerates `static/favicon.svg`, `favicon-32.png`, `favicon.ico` and

@@ -1,25 +1,43 @@
 const MOUSELOOK_KEY = 'event-horizon:mouselook'
+const SENSITIVITY_KEY = 'event-horizon:sensitivity'
 const UI_SELECTOR = 'button, a, input, select, textarea, label, .dialog, .portfolio-panel, .sound-panel, #pause, #finale, #title, #rotate-overlay'
+const CLICKABLE_SELECTOR = 'button, a, input, select, textarea, label, [role="button"]'
+
+const LOOK_SENSITIVITY = 0.0015   // radians per pixel of mouse travel while the pointer is locked
+const LOOK_FRAME_CAP = 0.35       // radians per frame; a mouse jump can never flip the ship
 
 /**
  * Turns keyboard, mouse and touch input into flight intent.
  *
- * On desktop the cursor is the direction: the ship turns toward the cursor's offset from the
- * screen centre (see `cursorSteer`), pausing while the pointer is over UI. Consumers read `yaw`,
- * `pitch` (-1..1), `thrust` (-0.35, 0, 1), `boost` (Shift or Space), `fire`, and poll
- * `consumePulse()` for the scanner pulse edge (R). One-shot keys are exposed through `onKey`.
- * Touch controls feed `touch` directly.
+ * On desktop the mouse steers FPS-style: while the pointer is locked to the canvas, mouse travel
+ * rotates the ship directly (`consumeLook`). When pointer lock is unavailable the cursor's offset
+ * from the screen centre steers instead (`cursorSteer`). Consumers read `yaw`, `pitch` (-1..1),
+ * `thrust` (-0.35, 0, 1), `boost` (Shift or Space), `fire`, and poll `consumePulse()` for the
+ * scanner pulse edge (R). One-shot keys are exposed through `onKey`. Touch feeds `touch` directly.
  */
 export default class Input {
   constructor(canvas) {
+    this.canvas = canvas
     this.keys = {}
     this.touch = { yaw: 0, pitch: 0, thrust: 0, boost: false, pulse: false, fire: false }
     this.pointerFire = false
-    this.mouse = { x: 0, y: 0, offsetX: 0, offsetY: 0, inside: false, overUi: false }
+    this.mouse = { x: 0, y: 0, offsetX: 0, offsetY: 0, inside: false, overUi: false, overClickable: false }
     this.mouseLook = readMouseLook()
+    this.lockSupported = typeof canvas.requestPointerLock === 'function'
+    this.locked = false
+    this.sensitivityScale = readSensitivity()
+    this._look = { dx: 0, dy: 0 }
     this.enabled = true
     this._pulseQueued = false
     this._keyHandlers = {}
+
+    document.addEventListener('pointerlockchange', () => { this.locked = document.pointerLockElement === canvas; this._look.dx = 0; this._look.dy = 0 })
+    document.addEventListener('pointerlockerror', () => { this.locked = false })
+    window.addEventListener('mousemove', (e) => {
+      if (!this.locked) return
+      this._look.dx += e.movementX || 0
+      this._look.dy += e.movementY || 0
+    })
 
     window.addEventListener('keydown', (e) => this._onKeyDown(e))
     window.addEventListener('keyup', (e) => { this.keys[e.code] = false })
@@ -33,29 +51,52 @@ export default class Input {
       const half = Math.max(1, window.innerHeight * 0.45)
       this.mouse.offsetX = clamp((e.clientX - window.innerWidth / 2) / half, -1, 1)
       this.mouse.offsetY = clamp((e.clientY - window.innerHeight / 2) / half, -1, 1)
-      this.mouse.overUi = !!(e.target instanceof Element && e.target.closest(UI_SELECTOR))
+      const target = e.target instanceof Element ? e.target : null
+      this.mouse.overUi = !!(target && target.closest(UI_SELECTOR))
+      this.mouse.overClickable = !!(target && target.closest(CLICKABLE_SELECTOR))
     })
     document.addEventListener('pointerleave', () => { this.mouse.inside = false })
     document.addEventListener('mouseleave', () => { this.mouse.inside = false })
 
     canvas.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'touch') return
-      if (e.button === 0) this.pointerFire = true
+      // A click on the free view recaptures the mouse; it should not also fire.
+      if (e.button === 0 && !(this.wantsLock && !this.locked)) this.pointerFire = true
     })
     const release = () => { this.pointerFire = false }
     window.addEventListener('pointerup', release)
     window.addEventListener('pointercancel', release)
   }
 
-  /** Cursor-look on or off (persisted). Keys keep working either way. */
+  /** Mouse look on or off (persisted). Keys keep working either way. */
   setMouseLook(on) {
     this.mouseLook = !!on
     try { localStorage.setItem(MOUSELOOK_KEY, this.mouseLook ? '1' : '0') } catch { /* private mode */ }
+    if (!this.mouseLook && this.locked) document.exitPointerLock?.()
   }
 
-  /** The steering the cursor currently asks for, or zero when it should not steer. */
+  /** Whether the ship should currently be flown with a captured mouse. */
+  /** Radians of turn per pixel of mouse travel: the base rate times the player's 0.2–3× scale. */
+  get sensitivity() { return LOOK_SENSITIVITY * this.sensitivityScale }
+
+  setSensitivity(scale) {
+    this.sensitivityScale = clampSensitivity(scale)
+    try { localStorage.setItem(SENSITIVITY_KEY, String(this.sensitivityScale)) } catch { /* private mode */ }
+  }
+
+  get wantsLock() { return this.mouseLook && this.lockSupported }
+
+  /** Radians of yaw/pitch accumulated from mouse travel since the last frame. Resets on read. */
+  consumeLook() {
+    const out = this.enabled && this.locked ? mouseLook(this._look.dx, this._look.dy, this.sensitivity) : { yaw: 0, pitch: 0 }
+    this._look.dx = 0
+    this._look.dy = 0
+    return out
+  }
+
+  /** Fallback steering when pointer lock is unavailable: the cursor's offset from the centre. */
   get steer() {
-    if (!this.enabled || !this.mouseLook || !this.mouse.inside || this.mouse.overUi) return { yaw: 0, pitch: 0 }
+    if (!this.enabled || !this.mouseLook || this.lockSupported || !this.mouse.inside || this.mouse.overUi) return { yaw: 0, pitch: 0 }
     return cursorSteer(this.mouse.offsetX, this.mouse.offsetY)
   }
 
@@ -137,6 +178,21 @@ export function cursorSteer(offsetX, offsetY, { deadZone = 0.12, curve = 1.4 } =
     return Math.sign(v) * Math.pow(t, curve)
   }
   return { yaw: -shape(offsetX) || 0, pitch: -shape(offsetY) || 0 }
+}
+
+/** Mouse travel (pixels) to rotation (radians). Right yaws right (negative), up climbs (positive). */
+export function mouseLook(dx, dy, sensitivity) {
+  const cap = (v) => Math.max(-LOOK_FRAME_CAP, Math.min(LOOK_FRAME_CAP, v))
+  return { yaw: cap(-dx * sensitivity) || 0, pitch: cap(-dy * sensitivity) || 0 }
+}
+
+export function clampSensitivity(scale) {
+  const n = Number(scale)
+  return Number.isFinite(n) ? Math.min(3, Math.max(0.2, n)) : 1
+}
+
+function readSensitivity() {
+  try { return clampSensitivity(localStorage.getItem(SENSITIVITY_KEY) ?? 1) } catch { return 1 }
 }
 
 function readMouseLook() {

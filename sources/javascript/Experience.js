@@ -18,6 +18,7 @@ import PauseMenu from './UI/PauseMenu.js'
 import TouchControls from './UI/TouchControls.js'
 import OrientationGuard from './UI/OrientationGuard.js'
 import Cursor from './UI/Cursor.js'
+import MouseLook from './UI/MouseLook.js'
 import Intro from './UI/Intro.js'
 
 /**
@@ -58,6 +59,7 @@ export default class Experience {
     this.touch = new TouchControls()
     this.orientation = new OrientationGuard()
     this.cursor = new Cursor()
+    this.mouseLook = new MouseLook()
     this.intro = new Intro()
 
     const spawn = this.world.spawnPoint()

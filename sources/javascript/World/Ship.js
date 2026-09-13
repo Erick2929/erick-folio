@@ -58,6 +58,8 @@ export default class Ship {
     this.destroyed = false
     this._yawVel = 0
     this._pitchVel = 0
+    this._lookYawRate = 0
+    this._lookPitchRate = 0
     this._bank = 0
     this._sinceDamage = 10
     this._sinceHit = 10
@@ -199,7 +201,7 @@ export default class Ship {
 
   _update(delta, elapsed) {
     if (!this.locked) this._fly(delta)
-    else this.velocity.multiplyScalar(Math.pow(0.2, delta))
+    else { this.velocity.multiplyScalar(Math.pow(0.2, delta)); this.input.consumeLook() }
 
     this.position.addScaledVector(this.velocity, delta)
     if (!this.locked) this._collide()
@@ -209,10 +211,10 @@ export default class Ship {
     this._sinceHit += delta
     if (this._sinceDamage > 3 && !this.destroyed) this.hull = Math.min(HULL_MAX, this.hull + 5 * delta)
 
-    const targetBank = -this._yawVel * 0.55
+    const targetBank = -(this._yawVel + clamp(this._lookYawRate, -2.2, 2.2)) * 0.55
     this._bank = lerp(this._bank, targetBank, 1 - Math.pow(0.001, delta))
     this.model.rotation.z = this._bank
-    this.model.rotation.x = lerp(this.model.rotation.x, -this._pitchVel * 0.12, 1 - Math.pow(0.001, delta))
+    this.model.rotation.x = lerp(this.model.rotation.x, -(this._pitchVel + clamp(this._lookPitchRate, -2, 2)) * 0.12, 1 - Math.pow(0.001, delta))
 
     const pulse = 0.85 + Math.sin(elapsed * 14) * 0.15
     this.engineLight.intensity = (3 + this.speedNorm * 12 + this.boostAmount * 20) * pulse
@@ -229,6 +231,14 @@ export default class Ship {
     this.quaternion.multiply(_q)
     _q.setFromAxisAngle(_right.set(1, 0, 0), -this._pitchVel * delta)
     this.quaternion.multiply(_q)
+
+    // Mouse look: captured mouse travel rotates the ship directly, FPS style.
+    const look = input.consumeLook()
+    if (look.yaw !== 0) { _q.setFromAxisAngle(_up.set(0, 1, 0), look.yaw); this.quaternion.multiply(_q) }
+    if (look.pitch !== 0) { _q.setFromAxisAngle(_right.set(1, 0, 0), -look.pitch); this.quaternion.multiply(_q) }
+    const rateSmooth = 1 - Math.pow(0.001, delta)
+    this._lookYawRate = lerp(this._lookYawRate, look.yaw / Math.max(delta, 1e-3), rateSmooth)
+    this._lookPitchRate = lerp(this._lookPitchRate, look.pitch / Math.max(delta, 1e-3), rateSmooth)
 
     // Gentle auto-level so long yaw+pitch combos never leave the player flying upside down.
     this.getRight(_right)
