@@ -25,6 +25,12 @@ export default class RaceCourse {
     this._nextIndex = 0
 
     for (const [id, course] of Object.entries(layout.courses)) this._buildCourse(id, course)
+    this._beam = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.5, 1.4, 70, 10, 1, true),
+      new THREE.MeshBasicMaterial({ color: COLORS.next, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
+    )
+    this._beam.visible = false
+    this.scene.add(this._beam)
     this.ticker.events.on('tick', (delta, elapsed) => this._update(delta, elapsed), 3)
   }
 
@@ -102,6 +108,7 @@ export default class RaceCourse {
     if (!this._activeCourse) return
     this._gateMeshes[this._activeCourse].group.visible = false
     this._activeCourse = null
+    this._beam.visible = false
   }
 
   setNextGate(index) {
@@ -129,6 +136,11 @@ export default class RaceCourse {
       const s = 1 + 0.06 * Math.sin(elapsed * 6)
       next.ring.scale.setScalar(s)
       next.disc.material.opacity = 0.08 + 0.08 * Math.sin(elapsed * 6)
+      this._beam.visible = true
+      this._beam.position.copy(next.holder.position)
+      this._beam.material.opacity = 0.16 + 0.08 * Math.sin(elapsed * 3)
+    } else {
+      this._beam.visible = false
     }
   }
 }

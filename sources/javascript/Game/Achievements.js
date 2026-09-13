@@ -11,7 +11,7 @@ export const ACHIEVEMENTS = [
   { id: 'time-traveler', name: 'TIME TRAVELER', hint: 'Let fifty Earth years pass in one run.' },
   { id: 'wormhole-tourist', name: 'WORMHOLE TOURIST', hint: 'Slip through the sealed horizon three times in one run.' },
   { id: 'racer', name: 'RACER', hint: 'Finish the time trial.' },
-  { id: 'hotlap', name: 'HOT LAP', hint: 'Finish the time trial in under 50 seconds.' },
+  { id: 'hotlap', name: 'HOT LAP', hint: 'Finish the time trial in under 80 seconds.' },
   { id: 'slingshot', name: 'SLINGSHOT', hint: 'Finish the hidden course behind the singularity.' },
   { id: 'photographer', name: 'PHOTOGRAPHER', hint: 'Use photo mode.' },
   { id: 'gunner', name: 'GUNNER', hint: 'Complete a target range session.' },

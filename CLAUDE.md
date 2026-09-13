@@ -112,9 +112,11 @@ tests/                           # physics + GameState behaviour tests (node --t
 | Touch | Drag left half to steer · THRUST / BOOST / BRAKE hold · PULSE tap · CRUISE toggle |
 
 ## Side Content and How to Reach It
-- **Time trial**: the amber checkered beacon ahead of the spawn (`LAYOUT.race.courses.trial`). Hold
-  position next to it to accept; 15 gates around the whole system; results card with a local top-5
-  leaderboard (`localStorage` key `event-horizon:races`). Also startable from the pause menu.
+- **Time trial**: the amber checkered beacon near ORIGIN (`LAYOUT.race.courses.trial`). Hold
+  position next to it to accept; 13 wide gates: one big lap around the outside of the system, then
+  a spiral in to a finish near the singularity above the disk. The next gate carries a light beam.
+  Results card with a local top-5 leaderboard (`event-horizon:races`); also startable from the
+  pause menu. `tests/course.test.js` guards gate spacing and clearance from planets.
 - **Slingshot** (hidden): a second beacon at `polar(140°, 96)` on the far side of the singularity.
   Six gates hugging the photon sphere above and below the disk. Own leaderboard.
 - **Target range**: the red beacon at `LAYOUT.range.beacon` (also from the pause menu). A 60 s

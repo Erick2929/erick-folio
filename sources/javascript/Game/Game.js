@@ -189,7 +189,7 @@ export default class Game {
       if (result.courseId === 'trial') {
         this.run.completeObjective('race')
         this.achievements.unlock('racer')
-        if (result.time < 50) this.achievements.unlock('hotlap')
+        if (result.time < 80) this.achievements.unlock('hotlap')
       }
       if (result.courseId === 'slingshot') this.achievements.unlock('slingshot')
       this._activeResult = 'race'
